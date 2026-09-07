@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>7box - Catálogo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-dark text-white">
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-black px-3 py-2 border-bottom border-secondary sticky-top">
+    <div class="container-fluid px-0">
+      
+      <!-- LOGO -->
+      <a class="navbar-brand fw-bold text-primary fs-3 me-auto" href="index.html">
+        7box <span class="fs-6 fw-normal text-muted d-none d-sm-inline">Inicio</span>
+      </a>
+
+      <button class="navbar-toggler border-0 shadow-none p-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenido" aria-controls="navbarContenido" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse mt-3 mt-lg-0" id="navbarContenido">
+        <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center ms-auto gap-2">
+          
+          <button id="btn-admin-agregar" class="btn btn-sm btn-success fw-bold text-nowrap d-flex align-items-center justify-content-center gap-1" style="display: none;" data-bs-toggle="modal" data-bs-target="#modalAgregarPelicula">
+            <i class="bi bi-plus-lg"></i> <span>Agregar Película</span>
+          </button>
+
+          <div class="w-100 my-1 my-lg-0" style="max-width: 250px;">
+            <input type="text" id="global-search" class="form-control form-control-sm bg-dark text-white border-secondary w-100" placeholder="Buscar película...">
+          </div>
+          
+          <a href="perfil.html" class="btn btn-sm btn-outline-success fw-bold text-nowrap d-flex align-items-center justify-content-center gap-1">
+            <i class="bi bi-person-circle"></i> <span>Mi Perfil</span>
+          </a>
+
+          <div class="d-flex align-items-center justify-content-between justify-content-lg-end gap-2 pt-2 pt-lg-0">
+            <span id="user-display" class="fw-bold text-info small text-nowrap"></span>
+            
+            <button id="btn-logout" class="btn btn-outline-danger btn-sm d-flex align-items-center justify-content-center px-3" title="Cerrar sesión">
+              <i class="bi bi-box-arrow-right"></i> <span class="d-lg-none ms-2">Cerrar Sesión</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </nav>
+
+  <div class="container-fluid py-4 px-3 px-md-4">
+    <div class="text-center my-3">
+      <h1 class="fw-bold fs-2 fs-md-1">¡Bienvenido a 7box!</h1>
+      <p class="text-muted small">Haz clic sobre un póster para ver toda su información detallada.</p>
+    </div>
+
+    <section class="mb-5">
+      <h4 class="text-primary fw-bold mb-3">Catálogo</h4>
+      <div class="posicion-carrusel position-relative">
+        <button class="btn-flecha flecha-izq" onclick="desplazarFila('row-emision', 'izquierda')"><i class="bi bi-chevron-left"></i></button>
+        <div id="row-emision" class="contenedor-carrusel"></div>
+        <button class="btn-flecha flecha-der" onclick="desplazarFila('row-emision', 'derecha')"><i class="bi bi-chevron-right"></i></button>
+      </div>
+    </section>
+
+    <section class="mb-5">
+      <h4 class="text-primary fw-bold mb-3">Recomendadas Para Ti</h4>
+      <div class="posicion-carrusel position-relative">
+        <button class="btn-flecha flecha-izq" onclick="desplazarFila('row-recomendadas', 'izquierda')"><i class="bi bi-chevron-left"></i></button>
+        <div id="row-recomendadas" class="contenedor-carrusel"></div>
+        <button class="btn-flecha flecha-der" onclick="desplazarFila('row-recomendadas', 'derecha')"><i class="bi bi-chevron-right"></i></button>
+      </div>
+    </section>
+
+    <section class="mb-5">
+      <h4 class="text-primary fw-bold mb-3">Mejor Valoradas</h4>
+      <div class="posicion-carrusel position-relative">
+        <button class="btn-flecha flecha-izq" onclick="desplazarFila('row-valoradas', 'izquierda')"><i class="bi bi-chevron-left"></i></button>
+        <div id="row-valoradas" class="contenedor-carrusel"></div>
+        <button class="btn-flecha flecha-der" onclick="desplazarFila('row-valoradas', 'derecha')"><i class="bi bi-chevron-right"></i></button>
+      </div>
+    </section>
+
+    <hr class="border-secondary my-4">
+
+    <section>
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <h5 class="fw-bold mb-0"><i class="bi bi-bookmark-fill text-primary"></i> Mi Perfil</h5>
+          <a href="perfil.html" class="btn btn-sm btn-success text-dark fw-bold">Ver todo <i class="bi bi-arrow-right"></i></a>
+        </div>
+        
+        <div class="btn-group btn-group-sm flex-wrap">
+          <button class="btn btn-outline-light active" id="btn-filtro-todas" onclick="filtrarPerfil('todas')">Todas</button>
+          <button class="btn btn-outline-success" id="btn-filtro-vista" onclick="filtrarPerfil('vista')">Vistas</button>
+          <button class="btn btn-outline-warning" id="btn-filtro-abandonada" onclick="filtrarPerfil('abandonada')">Abandonadas</button>
+          <button class="btn btn-outline-danger" id="btn-filtro-no_gusto" onclick="filtrarPerfil('no_gusto')">No me gustaron</button>
+        </div>
+      </div>
+      
+      <div id="row-perfil" class="d-flex flex-wrap gap-3"></div>
+    </section>
+  </div>
+
+  <div class="modal fade" id="modalAgregarPelicula" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-modal text-white border-0 shadow-lg">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title fw-bold text-primary"><i class="bi bi-film"></i> Añadir Nueva Película</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="form-nueva-pelicula">
+            <div class="mb-3">
+              <label class="form-label small text-muted">Título</label>
+              <input type="text" id="admin-titulo" class="form-control bg-dark text-white border-secondary" placeholder="Ej: Spider-Man: Brand New Day" required>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label small text-muted">Nota IMDb</label>
+                <input type="number" step="0.1" max="10" min="0" id="admin-nota" class="form-control bg-dark text-white border-secondary" placeholder="8.5" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label small text-muted">Duración</label>
+                <input type="text" id="admin-duracion" class="form-control bg-dark text-white border-secondary" placeholder="2h 15m">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-muted">URL de la Imagen (Póster)</label>
+              <input type="url" id="admin-imagen" class="form-control bg-dark text-white border-secondary" placeholder="https://..." required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-muted">URL del Tráiler (YouTube)</label>
+              <input type="url" id="admin-trailer" class="form-control bg-dark text-white border-secondary" placeholder="https://www.youtube.com/watch?v=QDia3e12czc">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-muted">Géneros (separados por coma)</label>
+              <input type="text" id="admin-generos" class="form-control bg-dark text-white border-secondary" placeholder="Acción, Ciencia Ficción, Aventura">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-muted">Sinopsis</label>
+              <textarea id="admin-sinopsis" class="form-control bg-dark text-white border-secondary" rows="3" placeholder="Resumen de la trama..."></textarea>
+            </div>
+            <div class="d-flex justify-content-end gap-2 pt-2">
+              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-success btn-sm fw-bold px-4">Guardar Película</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalPelicula" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content bg-modal text-white border-0 shadow-lg">
+        <div class="modal-body p-4 position-relative">
+          <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3" data-bs-dismiss="modal"></button>
+          
+          <div class="row g-4 align-items-center">
+            <div class="col-md-5 text-center">
+              <img id="modal-img" src="" class="img-fluid rounded-3 shadow" alt="Poster">
+            </div>
+            <div class="col-md-7">
+              <h2 id="modal-titulo" class="fw-bold text-white mb-1"></h2>
+              <p id="modal-tagline" class="text-secondary fst-italic small mb-3"></p>
+              <p id="modal-sinopsis" class="text-light small lh-base mb-3"></p>
+              
+              <div class="mb-3">
+                <span class="text-muted small d-block mb-2 fw-bold">Genres</span>
+                <div id="modal-generos" class="d-flex flex-wrap gap-2"></div>
+              </div>
+
+              <!-- BOTÓN TRÁILER DE YOUTUBE -->
+              <div class="mb-4">
+                <a id="modal-trailer-btn" href="#" target="_blank" class="btn btn-danger btn-sm fw-bold px-3 d-inline-flex align-items-center gap-2">
+                  <i class="bi bi-youtube fs-5"></i> Ver Tráiler
+                </a>
+              </div>
+
+              <div class="row g-2 mt-2 text-center">
+                <div class="col-6 col-md-4">
+                  <div class="bg-dark p-2 rounded border border-secondary">
+                    <small class="text-muted d-block extra-small">Director</small>
+                    <span id="modal-director" class="fw-bold text-white small">-</span>
+                  </div>
+                </div>
+                <div class="col-6 col-md-4">
+                  <div class="bg-dark p-2 rounded border border-secondary">
+                    <small class="text-muted d-block extra-small">Release Date</small>
+                    <span id="modal-fecha" class="fw-bold text-white small">-</span>
+                  </div>
+                </div>
+                <div class="col-6 col-md-4">
+                  <div class="bg-dark p-2 rounded border border-secondary">
+                    <small class="text-muted d-block extra-small">Runtime</small>
+                    <span id="modal-duracion" class="fw-bold text-white small">-</span>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="bg-dark p-2 rounded border border-secondary">
+                    <small class="text-muted d-block extra-small">Rating</small>
+                    <span id="modal-rating" class="fw-bold text-warning small">-</span>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="bg-dark p-2 rounded border border-secondary">
+                    <small class="text-muted d-block extra-small">Votes</small>
+                    <span id="modal-votos" class="fw-bold text-white small">-</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
