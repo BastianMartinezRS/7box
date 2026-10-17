@@ -1,16 +1,40 @@
-# React + Vite
+7box
+7box es una aplicación web responsiva (Single Page Application) para explorar películas, ver detalles y gestionar una colección personal de cine.
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Características
+Catálogo: Explora listas de películas en emisión, recomendadas y mejor valoradas mediante carruseles dinámicos.
 
-Currently, two official plugins are available:
+Detalles y Tráiler: Revisa sinopsis, nota IMDb, duración y acceso al tráiler en YouTube a través de modales.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Colección Personal: Clasifica y filtra películas por estado (Vistas, Abandonadas, No me gustaron) en tu perfil.
 
-## React Compiler
+Búsqueda: Buscador global en tiempo real integrado en la barra de navegación.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Panel Administrador: Formulario para agregar nuevos títulos al catálogo (accesible ingresando con el usuario admin).
 
-## Expanding the Oxlint configuration
+Diseño Responsivo: Interfaz adaptada a móviles, tablets y escritorio usando Bootstrap.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Tecnologías
+React (Componentes funcionales y Hooks)
+
+Vite (Entorno de desarrollo y construcción)
+
+React Router DOM (Enrutamiento de la SPA)
+
+Bootstrap 5 & Bootstrap Icons (Estilos y componentes UI)
+
+JavaScript (ES6+) / JSX
+
+Estructura del Proyecto:
+
+├── public/                 # Archivos estáticos
+├── src/                    # Código fuente de React
+│   ├── components/         # Componentes reutilizables (Navbar, MovieCard, Carousel, Modals)
+│   ├── data/               # Datos iniciales (peliculas.js)
+│   ├── pages/              # Vistas principales (Home, Login, Profile)
+│   ├── App.jsx             # Enrutador y estados globales
+│   ├── main.jsx            # Punto de entrada de la aplicación
+│   └── index.css           # Estilos globales personalizados
+├── index.html              # Plantilla HTML principal
+├── package.json            # Dependencias y scripts
+└── vite.config.js          # Configuración de Vite
