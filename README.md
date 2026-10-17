@@ -1,31 +1,16 @@
-7box es una aplicación web responsiva para explorar películas, ver detalles y gestionar una colección personal de cine.
+# React + Vite
 
----
+This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
-## Características
+Currently, two official plugins are available:
 
-* **Catálogo:** Explora listas de películas en emisión, recomendadas y mejor valoradas.
-* **Detalles y Tráiler:** Revisa sinopsis, nota IMDb, duración y acceso al tráiler en YouTube.
-* **Colección Personal:** Filtra películas por estado (Vistas, Abandonadas, No me gustaron).
-* **Búsqueda:** Buscador global en tiempo real.
-* **Panel Administrador:** Formulario para agregar nuevos títulos al catálogo.
-* **Diseño Responsivo:** Interfaz adaptada a móviles, tablets y escritorio con barra superior fija.
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
----
+## React Compiler
 
-## Tecnologías
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-* **HTML5**
-* **CSS3 & Bootstrap 5**
-* **Bootstrap Icons**
-* **JavaScript (ES6)**
+## Expanding the Oxlint configuration
 
----
-
-## Estructura del Proyecto
-
-```text
-├── index.html        # Página principal
-├── perfil.html       # Colección del usuario
-├── styles.css        # Estilos personalizados
-└── script.js         # Lógica y datos del sistema
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
