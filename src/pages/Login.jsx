@@ -4,9 +4,22 @@ export default function Login({ onLogin, onRegister }) {
   const [tab, setTab] = useState('login');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError('');
+
+    if (username.trim().length < 3) {
+      setError('El nombre de usuario debe tener al menos 3 caracteres.');
+      return;
+    }
+
+    if (password.trim().length < 4) {
+      setError('La contraseña debe tener al menos 4 caracteres.');
+      return;
+    }
+
     if (tab === 'login') {
       onLogin(username, password);
     } else {
@@ -22,11 +35,13 @@ export default function Login({ onLogin, onRegister }) {
           <p className="text-muted small">Ingresa para guardar tus listas de películas</p>
         </div>
 
+        {error && <div className="alert alert-danger py-2 small">{error}</div>}
+
         <ul className="nav nav-pills nav-justified mb-3">
           <li className="nav-item">
             <button 
               className={`nav-link ${tab === 'login' ? 'active' : ''}`} 
-              onClick={() => setTab('login')}
+              onClick={() => { setTab('login'); setError(''); }}
             >
               Ingresar
             </button>
@@ -34,7 +49,7 @@ export default function Login({ onLogin, onRegister }) {
           <li className="nav-item">
             <button 
               className={`nav-link ${tab === 'register' ? 'active' : ''}`} 
-              onClick={() => setTab('register')}
+              onClick={() => { setTab('register'); setError(''); }}
             >
               Registrarse
             </button>

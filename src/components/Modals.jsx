@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import * as bootstrap from 'bootstrap';
 
-export default function Modals({ peliculaSeleccionada, onAgregarPelicula }) {
+export default function Modals({ peliculaSeleccionada, onAgregarPelicula, onCalificar, onCambiarEstado }) {
   const [nuevaPeli, setNuevaPeli] = useState({
     titulo: '',
     nota: '',
@@ -34,8 +35,9 @@ export default function Modals({ peliculaSeleccionada, onAgregarPelicula }) {
 
     // Cerrar modal vía Bootstrap Data Attribute
     const modalElem = document.getElementById("modalAgregarPelicula");
-    if (window.bootstrap?.Modal) {
-      const modalInstance = window.bootstrap.Modal.getInstance(modalElem);
+    const ModalClass = bootstrap?.Modal || window.bootstrap?.Modal;
+    if (ModalClass && modalElem) {
+      const modalInstance = ModalClass.getInstance(modalElem);
       if (modalInstance) modalInstance.hide();
     }
   };
@@ -118,7 +120,7 @@ export default function Modals({ peliculaSeleccionada, onAgregarPelicula }) {
                       </div>
                     </div>
 
-                    <div className="mb-4">
+                    <div className="mb-3 d-flex flex-wrap align-items-center gap-3">
                       <a 
                         href={peliculaSeleccionada.trailer || '#'} 
                         target="_blank" 
@@ -127,6 +129,75 @@ export default function Modals({ peliculaSeleccionada, onAgregarPelicula }) {
                       >
                         <i className="bi bi-youtube fs-5"></i> Ver Tráiler
                       </a>
+                    </div>
+
+                    {/* BOTONES DE ESTADO (VISTA, ABANDONADA, NO ME GUSTÓ) */}
+                    <div className="p-3 mb-3 rounded bg-dark border border-secondary">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <span className="text-light fw-bold small">
+                          <i className="bi bi-bookmark-fill text-primary me-1"></i> Estado en mi lista:
+                        </span>
+                        {peliculaSeleccionada.estadoPerfil && peliculaSeleccionada.estadoPerfil !== 'ninguno' && (
+                          <span className={`badge ${
+                            peliculaSeleccionada.estadoPerfil === 'vista' ? 'bg-success text-white' : 
+                            peliculaSeleccionada.estadoPerfil === 'abandonada' ? 'bg-warning text-dark' : 'bg-danger text-white'
+                          } extra-small`}>
+                            {peliculaSeleccionada.estadoPerfil === 'vista' ? '✓ Vista' : 
+                             peliculaSeleccionada.estadoPerfil === 'abandonada' ? '⏸ Abandonada' : '✕ No me gustó'}
+                          </span>
+                        )}
+                      </div>
+                      <div className="btn-group btn-group-sm w-100" role="group">
+                        <button 
+                          type="button" 
+                          className={`btn ${peliculaSeleccionada.estadoPerfil === 'vista' ? 'btn-success text-white fw-bold' : 'btn-outline-success'}`}
+                          onClick={() => onCambiarEstado && onCambiarEstado(peliculaSeleccionada.id, 'vista')}
+                        >
+                          <i className="bi bi-check-circle-fill me-1"></i> Vista
+                        </button>
+                        <button 
+                          type="button" 
+                          className={`btn ${peliculaSeleccionada.estadoPerfil === 'abandonada' ? 'btn-warning text-dark fw-bold' : 'btn-outline-warning'}`}
+                          onClick={() => onCambiarEstado && onCambiarEstado(peliculaSeleccionada.id, 'abandonada')}
+                        >
+                          <i className="bi bi-pause-circle-fill me-1"></i> Abandonada
+                        </button>
+                        <button 
+                          type="button" 
+                          className={`btn ${peliculaSeleccionada.estadoPerfil === 'no_gusto' ? 'btn-danger text-white fw-bold' : 'btn-outline-danger'}`}
+                          onClick={() => onCambiarEstado && onCambiarEstado(peliculaSeleccionada.id, 'no_gusto')}
+                        >
+                          <i className="bi bi-x-circle-fill me-1"></i> No me gustó
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="p-3 mb-3 rounded bg-dark border border-secondary">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <span className="text-light fw-bold small"><i className="bi bi-star-fill text-warning me-1"></i> Mi Puntuación Personal:</span>
+                        <span className="badge bg-warning text-dark fw-bold">
+                          {peliculaSeleccionada.miPuntuacion ? `${peliculaSeleccionada.miPuntuacion} / 5` : 'Sin puntuar'}
+                        </span>
+                      </div>
+                      <div className="d-flex gap-2 align-items-center">
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <i
+                            key={star}
+                            className={`bi ${star <= (peliculaSeleccionada.miPuntuacion || 0) ? 'bi-star-fill text-warning' : 'bi-star text-secondary'} fs-5 cursor-pointer`}
+                            onClick={() => onCalificar && onCalificar(peliculaSeleccionada.id, star)}
+                            title={`Calificar con ${star} estrella${star > 1 ? 's' : ''}`}
+                          />
+                        ))}
+                        {peliculaSeleccionada.miPuntuacion && (
+                          <button 
+                            type="button" 
+                            className="btn btn-outline-secondary btn-sm ms-2 py-0 px-2 extra-small"
+                            onClick={() => onCalificar && onCalificar(peliculaSeleccionada.id, null)}
+                          >
+                            Quitar nota
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     <div className="row g-2 mt-2 text-center">

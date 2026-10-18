@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Carousel from '../components/Carousel';
 import MovieCard from '../components/MovieCard';
 
-export default function Home({ peliculas, filtroBusqueda, onCambiarEstado, onAbrirDetalles }) {
+export default function Home({ peliculas, filtroBusqueda, onCambiarEstado, onAbrirDetalles, onCalificar }) {
   const [filtroPerfil, setFiltroPerfil] = useState('todas');
 
   // Filtrar catálogo por término de búsqueda
@@ -32,19 +32,19 @@ export default function Home({ peliculas, filtroBusqueda, onCambiarEstado, onAbr
       {/* CATÁLOGO PRINCIPAL */}
       <section className="mb-5">
         <h4 className="text-primary fw-bold mb-3">Catálogo</h4>
-        <Carousel peliculas={peliculasFiltradas} onCambiarEstado={onCambiarEstado} onAbrirDetalles={onAbrirDetalles} />
+        <Carousel peliculas={peliculasFiltradas} onCambiarEstado={onCambiarEstado} onAbrirDetalles={onAbrirDetalles} onCalificar={onCalificar} />
       </section>
 
       {/* RECOMENDADAS */}
       <section className="mb-5">
         <h4 className="text-primary fw-bold mb-3">Recomendadas Para Ti</h4>
-        <Carousel peliculas={recomendadas} onCambiarEstado={onCambiarEstado} onAbrirDetalles={onAbrirDetalles} />
+        <Carousel peliculas={recomendadas} onCambiarEstado={onCambiarEstado} onAbrirDetalles={onAbrirDetalles} onCalificar={onCalificar} />
       </section>
 
       {/* MEJOR VALORADAS */}
       <section className="mb-5">
         <h4 className="text-primary fw-bold mb-3">Mejor Valoradas</h4>
-        <Carousel peliculas={mejorValoradas} onCambiarEstado={onCambiarEstado} onAbrirDetalles={onAbrirDetalles} />
+        <Carousel peliculas={mejorValoradas} onCambiarEstado={onCambiarEstado} onAbrirDetalles={onAbrirDetalles} onCalificar={onCalificar} />
       </section>
 
       <hr className="border-secondary my-4" />
@@ -53,7 +53,7 @@ export default function Home({ peliculas, filtroBusqueda, onCambiarEstado, onAbr
       <section>
         <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
           <div className="d-flex align-items-center gap-2">
-            <h5 className="fw-bold mb-0"><i class="bi bi-bookmark-fill text-primary"></i> Mi Perfil</h5>
+            <h5 className="fw-bold mb-0"><i className="bi bi-bookmark-fill text-primary"></i> Mi Perfil</h5>
             <Link to="/perfil" className="btn btn-sm btn-success text-dark fw-bold">
               Ver todo <i className="bi bi-arrow-right"></i>
             </Link>
@@ -72,7 +72,7 @@ export default function Home({ peliculas, filtroBusqueda, onCambiarEstado, onAbr
             <p className="text-muted small">No hay películas en esta categoría.</p>
           ) : (
             peliculasPerfil.map(peli => (
-              <MovieCard key={peli.id} peli={peli} onCambiarEstado={onCambiarEstado} onAbrirDetalles={onAbrirDetalles} />
+              <MovieCard key={peli.id} peli={peli} onCambiarEstado={onCambiarEstado} onAbrirDetalles={onAbrirDetalles} onCalificar={onCalificar} />
             ))
           )}
         </div>

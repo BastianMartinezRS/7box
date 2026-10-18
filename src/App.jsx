@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import * as bootstrap from 'bootstrap';
 import { peliculasIniciales } from './data/peliculas';
 import Navbar from './components/Navbar';
 import Modals from './components/Modals';
@@ -52,7 +53,11 @@ export default function App() {
     setPeliculas(prev => prev.map(peli => {
       if (String(peli.id) === String(idPelicula)) {
         const nuevoEstado = peli.estadoPerfil === estadoSeleccionado ? 'ninguno' : estadoSeleccionado;
-        return { ...peli, estadoPerfil: nuevoEstado };
+        const peliActualizada = { ...peli, estadoPerfil: nuevoEstado };
+        if (peliculaSeleccionada && String(peliculaSeleccionada.id) === String(idPelicula)) {
+          setPeliculaSeleccionada(peliActualizada);
+        }
+        return peliActualizada;
       }
       return peli;
     }));
@@ -62,12 +67,27 @@ export default function App() {
     const peli = peliculas.find(p => String(p.id) === String(idPelicula));
     if (peli) {
       setPeliculaSeleccionada(peli);
-      if (window.bootstrap?.Modal) {
-        const modalElem = document.getElementById("modalPelicula");
-        const modalInstance = new window.bootstrap.Modal(modalElem);
+      const modalElem = document.getElementById("modalPelicula");
+      const ModalClass = bootstrap?.Modal || window.bootstrap?.Modal;
+      if (modalElem && ModalClass) {
+        const modalInstance = ModalClass.getOrCreateInstance(modalElem);
         modalInstance.show();
       }
     }
+  };
+
+  const handleCalificar = (idPelicula, puntuacion) => {
+    setPeliculas(prev => prev.map(peli => {
+      if (String(peli.id) === String(idPelicula)) {
+        const nuevaPuntuacion = peli.miPuntuacion === puntuacion ? null : puntuacion;
+        const peliActualizada = { ...peli, miPuntuacion: nuevaPuntuacion };
+        if (peliculaSeleccionada && String(peliculaSeleccionada.id) === String(idPelicula)) {
+          setPeliculaSeleccionada(peliActualizada);
+        }
+        return peliActualizada;
+      }
+      return peli;
+    }));
   };
 
   const handleAgregarPelicula = (nuevaPeli) => {
@@ -98,6 +118,7 @@ export default function App() {
                 filtroBusqueda={filtroBusqueda} 
                 onCambiarEstado={handleCambiarEstado} 
                 onAbrirDetalles={handleAbrirDetalles} 
+                onCalificar={handleCalificar} 
               />
             ) : <Navigate to="/login" />} 
           />
@@ -108,6 +129,7 @@ export default function App() {
                 peliculas={peliculas} 
                 onCambiarEstado={handleCambiarEstado} 
                 onAbrirDetalles={handleAbrirDetalles} 
+                onCalificar={handleCalificar} 
               />
             ) : <Navigate to="/login" />} 
           />
@@ -116,6 +138,8 @@ export default function App() {
         <Modals 
           peliculaSeleccionada={peliculaSeleccionada} 
           onAgregarPelicula={handleAgregarPelicula} 
+          onCalificar={handleCalificar} 
+          onCambiarEstado={handleCambiarEstado} 
         />
       </div>
     </BrowserRouter>

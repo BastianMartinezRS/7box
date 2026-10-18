@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import MovieCard from './MovieCard';
 
-export default function Carousel({ peliculas, onCambiarEstado, onAbrirDetalles }) {
+export default function Carousel({ peliculas, onCambiarEstado, onAbrirDetalles, onCalificar }) {
   const contenedorRef = useRef(null);
 
   const desplazar = (direccion) => {
@@ -31,6 +31,7 @@ export default function Carousel({ peliculas, onCambiarEstado, onAbrirDetalles }
             peli={peli} 
             onCambiarEstado={onCambiarEstado} 
             onAbrirDetalles={onAbrirDetalles} 
+            onCalificar={onCalificar} 
           />
         ))}
       </div>

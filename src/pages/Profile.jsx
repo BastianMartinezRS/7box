@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import MovieCard from '../components/MovieCard';
 
-export default function Profile({ peliculas, onCambiarEstado, onAbrirDetalles }) {
+export default function Profile({ peliculas, onCambiarEstado, onAbrirDetalles, onCalificar }) {
   const [filtro, setFiltro] = useState('todas');
 
   const peliculasPerfil = peliculas.filter(p => {
@@ -28,7 +28,7 @@ export default function Profile({ peliculas, onCambiarEstado, onAbrirDetalles })
           <p className="text-muted w-100 text-center mt-5">Aún no has clasificado películas en esta categoría.</p>
         ) : (
           peliculasPerfil.map(peli => (
-            <MovieCard key={peli.id} peli={peli} onCambiarEstado={onCambiarEstado} onAbrirDetalles={onAbrirDetalles} />
+            <MovieCard key={peli.id} peli={peli} onCambiarEstado={onCambiarEstado} onAbrirDetalles={onAbrirDetalles} onCalificar={onCalificar} />
           ))
         )}
       </div>
