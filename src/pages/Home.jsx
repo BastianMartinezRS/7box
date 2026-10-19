@@ -31,19 +31,19 @@ export default function Home({ peliculas, filtroBusqueda, onCambiarEstado, onAbr
 
       {/* CATÁLOGO PRINCIPAL */}
       <section className="mb-5">
-        <h4 className="text-primary fw-bold mb-3">Catálogo</h4>
+        <h4 className="text-primary fw-bold mb-3 px-2">Catálogo</h4>
         <Carousel peliculas={peliculasFiltradas} onCambiarEstado={onCambiarEstado} onAbrirDetalles={onAbrirDetalles} onCalificar={onCalificar} />
       </section>
 
       {/* RECOMENDADAS */}
       <section className="mb-5">
-        <h4 className="text-primary fw-bold mb-3">Recomendadas Para Ti</h4>
+        <h4 className="text-primary fw-bold mb-3 px-2">Recomendadas Para Ti</h4>
         <Carousel peliculas={recomendadas} onCambiarEstado={onCambiarEstado} onAbrirDetalles={onAbrirDetalles} onCalificar={onCalificar} />
       </section>
 
       {/* MEJOR VALORADAS */}
       <section className="mb-5">
-        <h4 className="text-primary fw-bold mb-3">Mejor Valoradas</h4>
+        <h4 className="text-primary fw-bold mb-3 px-2">Mejor Valoradas</h4>
         <Carousel peliculas={mejorValoradas} onCambiarEstado={onCambiarEstado} onAbrirDetalles={onAbrirDetalles} onCalificar={onCalificar} />
       </section>
 

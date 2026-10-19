@@ -6,7 +6,7 @@ export default function Carousel({ peliculas, onCambiarEstado, onAbrirDetalles, 
 
   const desplazar = (direccion) => {
     if (contenedorRef.current) {
-      const distancia = 320;
+      const distancia = Math.max(340, Math.floor(contenedorRef.current.clientWidth * 0.75));
       contenedorRef.current.scrollBy({
         left: direccion === 'izquierda' ? -distancia : distancia,
         behavior: 'smooth'

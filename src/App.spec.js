@@ -115,4 +115,24 @@ describe('Pruebas Unitarias Frontend - 7box', () => {
     const esAdmin = adminUser.esAdmin || adminUser.nombre.toLowerCase() === 'admin';
     expect(esAdmin).toBeTrue();
   });
+
+  it('11. Debe validar credenciales de administrador (admin / admin)', () => {
+    const validarAdmin = (user, pass) => user.toLowerCase() === 'admin' && pass === 'admin';
+    expect(validarAdmin('admin', 'admin')).toBeTrue();
+    expect(validarAdmin('admin', 'admin123')).toBeFalse();
+  });
+
+  it('12. Debe validar datos al registrar usuarios no admin', () => {
+    const validarRegistro = (user, pass) => {
+      if (!user || user.trim().length < 3) return { valido: false, error: 'Mínimo 3 caracteres' };
+      if (user.trim().toLowerCase() === 'admin') return { valido: false, error: 'Reservado' };
+      if (!pass || pass.length < 4) return { valido: false, error: 'Mínimo 4 caracteres' };
+      return { valido: true };
+    };
+
+    expect(validarRegistro('admin', '1234').valido).toBeFalse();
+    expect(validarRegistro('ab', '1234').valido).toBeFalse();
+    expect(validarRegistro('juan', '12').valido).toBeFalse();
+    expect(validarRegistro('juan', '1234').valido).toBeTrue();
+  });
 });
