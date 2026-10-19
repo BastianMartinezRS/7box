@@ -10,76 +10,85 @@ export default function Login({ onLogin, onRegister }) {
     e.preventDefault();
     setError('');
 
-    if (username.trim().length < 3) {
-      setError('El nombre de usuario debe tener al menos 3 caracteres.');
+    if (!username.trim()) {
+      setError('Por favor ingresa tu nombre de usuario.');
       return;
     }
 
-    if (password.trim().length < 4) {
-      setError('La contraseña debe tener al menos 4 caracteres.');
+    if (!password) {
+      setError('Por favor ingresa tu contraseña.');
       return;
     }
 
     if (tab === 'login') {
-      onLogin(username, password);
+      const res = onLogin(username, password);
+      if (res && !res.success) {
+        setError(res.error);
+      }
     } else {
-      onRegister(username, password);
+      const res = onRegister(username, password);
+      if (res && !res.success) {
+        setError(res.error);
+      }
     }
   };
 
   return (
-    <div className="d-flex align-items-center justify-content-center min-vh-100 bg-dark text-white">
-      <div className="card bg-card border-secondary p-4 shadow-lg" style={{ maxWidth: '380px', width: '100%' }}>
+    <div className="d-flex align-items-center justify-content-center min-vh-100 w-100 px-3" style={{ backgroundColor: '#0e1017' }}>
+      <div className="login-card p-4 p-sm-5 text-white" style={{ maxWidth: '400px', width: '100%' }}>
         <div className="text-center mb-4">
-          <h1 className="text-white fw-bold display-6">7box</h1>
+          <h1 className="fw-bold display-6 mb-1 text-primary">7box</h1>
           <p className="text-muted small">Ingresa para guardar tus listas de películas</p>
         </div>
 
-        {error && <div className="alert alert-danger py-2 small">{error}</div>}
+        {error && (
+          <div className="alert-7box-error py-2 px-3 small mb-3 d-flex align-items-center gap-2">
+            <i className="bi bi-exclamation-circle-fill flex-shrink-0 fs-6"></i>
+            <span className="fw-medium">{error}</span>
+          </div>
+        )}
 
-        <ul className="nav nav-pills nav-justified mb-3">
-          <li className="nav-item">
-            <button 
-              className={`nav-link ${tab === 'login' ? 'active' : ''}`} 
-              onClick={() => { setTab('login'); setError(''); }}
-            >
-              Ingresar
-            </button>
-          </li>
-          <li className="nav-item">
-            <button 
-              className={`nav-link ${tab === 'register' ? 'active' : ''}`} 
-              onClick={() => { setTab('register'); setError(''); }}
-            >
-              Registrarse
-            </button>
-          </li>
-        </ul>
+        <div className="d-flex p-1 rounded-3 mb-4" style={{ backgroundColor: '#181d2a', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          <button 
+            type="button" 
+            className={`btn w-50 py-2 btn-sm fw-bold rounded-2 ${tab === 'login' ? 'btn-7box-primary' : 'text-muted border-0 bg-transparent'}`} 
+            onClick={() => { setTab('login'); setError(''); }}
+          >
+            Ingresar
+          </button>
+          <button 
+            type="button" 
+            className={`btn w-50 py-2 btn-sm fw-bold rounded-2 ${tab === 'register' ? 'btn-7box-primary' : 'text-muted border-0 bg-transparent'}`} 
+            onClick={() => { setTab('register'); setError(''); }}
+          >
+            Registrarse
+          </button>
+        </div>
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label className="form-label text-muted">Usuario</label>
+            <label className="form-label text-light small fw-medium mb-1">Usuario</label>
             <input 
               type="text" 
               value={username} 
               onChange={(e) => setUsername(e.target.value)} 
-              className="form-control bg-dark text-white border-secondary" 
+              className="form-control login-input w-100" 
               placeholder="Tu usuario" 
               required 
             />
           </div>
-          <div className="mb-3">
-            <label className="form-label text-muted">Contraseña</label>
+          <div className="mb-4">
+            <label className="form-label text-light small fw-medium mb-1">Contraseña</label>
             <input 
               type="password" 
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
-              className="form-control bg-dark text-white border-secondary" 
+              className="form-control login-input w-100" 
               placeholder="••••••••" 
               required 
             />
           </div>
-          <button type="submit" className={`btn w-100 ${tab === 'login' ? 'btn-purple' : 'btn-success'}`}>
+          <button type="submit" className="btn btn-7box-primary w-100">
             {tab === 'login' ? 'Ingresar' : 'Crear Cuenta'}
           </button>
         </form>

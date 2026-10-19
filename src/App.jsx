@@ -19,12 +19,30 @@ export default function App() {
     return saved ? JSON.parse(saved) : peliculasIniciales;
   });
 
+  const [usuarios, setUsuarios] = useState(() => {
+    const saved = localStorage.getItem('usuarios_7box');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        const sinAdmin = parsed.filter(u => u.nombre.toLowerCase() !== 'admin');
+        return [{ nombre: 'admin', clave: 'admin', esAdmin: true }, ...sinAdmin];
+      } catch (e) {
+        console.error('Error al cargar usuarios de localStorage:', e);
+      }
+    }
+    return [{ nombre: 'admin', clave: 'admin', esAdmin: true }];
+  });
+
   const [filtroBusqueda, setFiltroBusqueda] = useState('');
   const [peliculaSeleccionada, setPeliculaSeleccionada] = useState(null);
 
   useEffect(() => {
     localStorage.setItem('peliculas', JSON.stringify(peliculas));
   }, [peliculas]);
+
+  useEffect(() => {
+    localStorage.setItem('usuarios_7box', JSON.stringify(usuarios));
+  }, [usuarios]);
 
   useEffect(() => {
     if (usuarioActual) {
@@ -35,14 +53,102 @@ export default function App() {
   }, [usuarioActual]);
 
   const handleLogin = (nombre, clave) => {
-    const esAdmin = nombre.toLowerCase() === 'admin' && clave === 'admin123';
-    const user = { nombre, clave, esAdmin };
-    setUsuarioActual(user);
+    const nombreLimpio = (nombre || '').trim();
+    if (!nombreLimpio) {
+      return { success: false, error: 'Por favor ingresa tu nombre de usuario.' };
+    }
+    if (!clave) {
+      return { success: false, error: 'Por favor ingresa tu contraseña.' };
+    }
+
+    // Validación admin con clave 'admin'
+    if (nombreLimpio.toLowerCase() === 'admin') {
+      if (clave === 'admin') {
+        const adminUser = { nombre: 'admin', clave: 'admin', esAdmin: true };
+        setUsuarioActual(adminUser);
+        return { success: true };
+      } else {
+        return { success: false, error: 'Contraseña incorrecta para el usuario admin.' };
+      }
+    }
+
+    // Validación para usuarios no admin
+    const usuarioEncontrado = usuarios.find(
+      u => u.nombre.toLowerCase() === nombreLimpio.toLowerCase()
+    );
+
+    if (!usuarioEncontrado) {
+      return { 
+        success: false, 
+        error: `El usuario "${nombreLimpio}" no existe. Regístrate en la pestaña "Registrarse".` 
+      };
+    }
+
+    if (usuarioEncontrado.clave !== clave) {
+      return { success: false, error: 'Contraseña incorrecta.' };
+    }
+
+    const sesionUsuario = {
+      nombre: usuarioEncontrado.nombre,
+      clave: usuarioEncontrado.clave,
+      esAdmin: false
+    };
+    setUsuarioActual(sesionUsuario);
+    return { success: true };
   };
 
   const handleRegister = (nombre, clave) => {
-    const user = { nombre, clave, esAdmin: nombre.toLowerCase() === 'admin' };
-    setUsuarioActual(user);
+    const nombreLimpio = (nombre || '').trim();
+
+    if (!nombreLimpio) {
+      return { success: false, error: 'El nombre de usuario es obligatorio.' };
+    }
+
+    if (nombreLimpio.length < 3) {
+      return { success: false, error: 'El nombre de usuario debe tener al menos 3 caracteres.' };
+    }
+
+    if (nombreLimpio.length > 20) {
+      return { success: false, error: 'El nombre de usuario no puede tener más de 20 caracteres.' };
+    }
+
+    const formatoValido = /^[a-zA-Z0-9_-]+$/.test(nombreLimpio);
+    if (!formatoValido) {
+      return { success: false, error: 'El usuario solo puede tener letras, números, guiones (-) y guiones bajos (_).' };
+    }
+
+    if (nombreLimpio.toLowerCase() === 'admin') {
+      return { success: false, error: 'El usuario "admin" está reservado para el administrador del sistema.' };
+    }
+
+    const existe = usuarios.some(
+      u => u.nombre.toLowerCase() === nombreLimpio.toLowerCase()
+    );
+    if (existe) {
+      return { success: false, error: `El usuario "${nombreLimpio}" ya está registrado. Por favor elige otro.` };
+    }
+
+    if (!clave || clave.trim().length === 0) {
+      return { success: false, error: 'La contraseña es obligatoria.' };
+    }
+
+    if (clave.length < 4) {
+      return { success: false, error: 'La contraseña debe tener al menos 4 caracteres.' };
+    }
+
+    if (clave.length > 50) {
+      return { success: false, error: 'La contraseña no puede exceder 50 caracteres.' };
+    }
+
+    const nuevoUsuario = {
+      nombre: nombreLimpio,
+      clave: clave,
+      esAdmin: false
+    };
+
+    setUsuarios(prev => [...prev, nuevoUsuario]);
+    setUsuarioActual(nuevoUsuario);
+    return { success: true };
   };
 
   const handleLogout = () => {
@@ -96,7 +202,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="bg-dark text-white min-vh-100">
+      <div className="text-white min-vh-100 w-100" style={{ backgroundColor: '#0e1017' }}>
         {usuarioActual && (
           <Navbar 
             usuarioActual={usuarioActual} 
