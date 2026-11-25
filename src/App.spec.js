@@ -1,18 +1,36 @@
-import React from 'react';
+import React, { act } from 'react';
 import ReactDOM from 'react-dom/client';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import MovieCard from './components/MovieCard.jsx';
 import Carousel from './components/Carousel.jsx';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
+import Navbar from './components/Navbar.jsx';
+import Modals from './components/Modals.jsx';
+import Profile from './pages/Profile.jsx';
+import { formatHoursMinutes, getYouTubeEmbedUrl, parseDurationMinutes } from './utils/movieHelpers.js';
+
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 describe('Pruebas Unitarias Frontend - 7box', () => {
   let container;
+  let root;
 
   beforeEach(() => {
     container = document.createElement('div');
     document.body.appendChild(container);
+    root = ReactDOM.createRoot(container);
   });
 
-  afterEach(() => {
-    document.body.removeChild(container);
+  afterEach(async () => {
+    if (root) {
+      await act(async () => {
+        root.unmount();
+      });
+      root = null;
+    }
+    if (container && container.parentNode) {
+      document.body.removeChild(container);
+    }
     container = null;
   });
 
@@ -30,58 +48,53 @@ describe('Pruebas Unitarias Frontend - 7box', () => {
     expect(mockPelicula.titulo).toBe('Spider-Man Test');
   });
 
-  it('2. Debe renderizar el título de la película en el componente MovieCard', () => {
-    const root = ReactDOM.createRoot(container);
-    root.render(<MovieCard peli={mockPelicula} onCambiarEstado={() => {}} onAbrirDetalles={() => {}} />);
-    
-    setTimeout(() => {
-      const tituloElement = container.querySelector('.card-title');
-      expect(tituloElement.textContent).toBe('Spider-Man Test');
-    }, 100);
+  it('2. Debe renderizar el título de la película en el componente MovieCard', async () => {
+    await act(async () => {
+      root.render(<MovieCard peli={mockPelicula} onCambiarEstado={() => {}} onAbrirDetalles={() => {}} />);
+    });
+
+    const tituloElement = container.querySelector('.card-title');
+    expect(tituloElement.textContent).toBe('Spider-Man Test');
   });
 
-  it('3. Debe llamar la función mock onAbrirDetalles al hacer clic en la tarjeta', () => {
+  it('3. Debe llamar la función mock onAbrirDetalles al hacer clic en la tarjeta', async () => {
     const spyAbrir = jasmine.createSpy('onAbrirDetalles');
-    const root = ReactDOM.createRoot(container);
-    root.render(<MovieCard peli={mockPelicula} onCambiarEstado={() => {}} onAbrirDetalles={spyAbrir} />);
+    await act(async () => {
+      root.render(<MovieCard peli={mockPelicula} onCambiarEstado={() => {}} onAbrirDetalles={spyAbrir} />);
+    });
 
-    setTimeout(() => {
-      const img = container.querySelector('img');
-      img.click();
-      expect(spyAbrir).toHaveBeenCalledWith(1);
-    }, 100);
+    const img = container.querySelector('img');
+    img.click();
+    expect(spyAbrir).toHaveBeenCalledWith(1);
   });
 
-  it('4. Debe disparar onCambiarEstado con la categoría correcta', () => {
+  it('4. Debe disparar onCambiarEstado con la categoría correcta', async () => {
     const spyEstado = jasmine.createSpy('onCambiarEstado');
-    const root = ReactDOM.createRoot(container);
-    root.render(<MovieCard peli={mockPelicula} onCambiarEstado={spyEstado} onAbrirDetalles={() => {}} />);
+    await act(async () => {
+      root.render(<MovieCard peli={mockPelicula} onCambiarEstado={spyEstado} onAbrirDetalles={() => {}} />);
+    });
 
-    setTimeout(() => {
-      const btnVista = container.querySelector('.btn-success');
-      btnVista.click();
-      expect(spyEstado).toHaveBeenCalled();
-    }, 100);
+    const btnVista = container.querySelector('.btn-success');
+    btnVista.click();
+    expect(spyEstado).toHaveBeenCalled();
   });
 
-  it('5. Debe mostrar un mensaje si la lista de películas en el carrusel está vacía', () => {
-    const root = ReactDOM.createRoot(container);
-    root.render(<Carousel peliculas={[]} onCambiarEstado={() => {}} onAbrirDetalles={() => {}} />);
+  it('5. Debe mostrar un mensaje si la lista de películas en el carrusel está vacía', async () => {
+    await act(async () => {
+      root.render(<Carousel peliculas={[]} onCambiarEstado={() => {}} onAbrirDetalles={() => {}} />);
+    });
 
-    setTimeout(() => {
-      expect(container.textContent).toContain('No hay películas disponibles.');
-    }, 100);
+    expect(container.textContent).toContain('No hay películas disponibles.');
   });
 
-  it('6. Debe renderizar la cantidad correcta de tarjetas en el carrusel', () => {
+  it('6. Debe renderizar la cantidad correcta de tarjetas en el carrusel', async () => {
     const listaMock = [mockPelicula, { ...mockPelicula, id: 2, titulo: 'Película 2' }];
-    const root = ReactDOM.createRoot(container);
-    root.render(<Carousel peliculas={listaMock} onCambiarEstado={() => {}} onAbrirDetalles={() => {}} />);
+    await act(async () => {
+      root.render(<Carousel peliculas={listaMock} onCambiarEstado={() => {}} onAbrirDetalles={() => {}} />);
+    });
 
-    setTimeout(() => {
-      const tarjetas = container.querySelectorAll('.card-pelicula');
-      expect(tarjetas.length).toBe(2);
-    }, 100);
+    const tarjetas = container.querySelectorAll('.card-pelicula');
+    expect(tarjetas.length).toBe(2);
   });
 
   it('7. Debe filtrar correctamente películas por nota IMDb mayor o igual a 4.0', () => {
@@ -134,5 +147,98 @@ describe('Pruebas Unitarias Frontend - 7box', () => {
     expect(validarRegistro('ab', '1234').valido).toBeFalse();
     expect(validarRegistro('juan', '12').valido).toBeFalse();
     expect(validarRegistro('juan', '1234').valido).toBeTrue();
+  });
+
+  it('13. ProtectedRoute debe bloquear usuarios sin rol ADMIN en rutas protegidas', async () => {
+    await act(async () => {
+      root.render(
+        <MemoryRouter initialEntries={['/admin']}>
+          <Routes>
+            <Route path="/login" element={<div>Pantalla Login</div>} />
+            <Route path="/" element={<div>Inicio Público</div>} />
+            <Route
+              path="/admin"
+              element={(
+                <ProtectedRoute usuarioActual={{ nombre: 'juan', role: 'ROLE_USER', esAdmin: false }} requireAdmin>
+                  <div>Panel Admin Secreto</div>
+                </ProtectedRoute>
+              )}
+            />
+          </Routes>
+        </MemoryRouter>
+      );
+    });
+
+    expect(container.textContent).not.toContain('Panel Admin Secreto');
+    expect(container.textContent).toContain('Inicio Público');
+  });
+
+  it('14. Navbar y Modals deben ocultar acciones de administración a usuarios regulares', async () => {
+    const regularUser = { nombre: 'juan', role: 'ROLE_USER', esAdmin: false };
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <Navbar usuarioActual={regularUser} onSearch={() => {}} onLogout={() => {}} onNuevaPelicula={() => {}} />
+          <Modals esAdmin={false} peliculaSeleccionada={mockPelicula} />
+        </MemoryRouter>
+      );
+    });
+
+    expect(container.querySelector('#btn-admin-agregar')).toBeNull();
+    expect(container.querySelector('#link-admin-panel')).toBeNull();
+    expect(container.querySelector('#modalAgregarPelicula')).toBeNull();
+  });
+
+  it('15. Navbar y Modals deben mostrar acciones de administración a ROLE_ADMIN', async () => {
+    const adminUser = { nombre: 'admin', role: 'ROLE_ADMIN', esAdmin: true };
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <Navbar usuarioActual={adminUser} onSearch={() => {}} onLogout={() => {}} onNuevaPelicula={() => {}} />
+          <Modals esAdmin={true} peliculaSeleccionada={mockPelicula} />
+        </MemoryRouter>
+      );
+    });
+
+    expect(container.querySelector('#btn-admin-agregar')).not.toBeNull();
+    expect(container.querySelector('#link-admin-panel')).not.toBeNull();
+    expect(container.querySelector('#modalAgregarPelicula')).not.toBeNull();
+  });
+
+  it('16. Debe convertir URLs de YouTube a formato embed y calcular duraciones', () => {
+    expect(getYouTubeEmbedUrl('https://www.youtube.com/watch?v=JfVOs4VSpmA')).toBe('https://www.youtube.com/embed/JfVOs4VSpmA');
+    expect(getYouTubeEmbedUrl('https://youtu.be/gfABwM-Ppng')).toBe('https://www.youtube.com/embed/gfABwM-Ppng');
+    expect(getYouTubeEmbedUrl('not-a-url')).toBeNull();
+
+    expect(parseDurationMinutes('135 min')).toBe(135);
+    expect(parseDurationMinutes('2h 15m')).toBe(135);
+    expect(formatHoursMinutes(135)).toBe('2h 15m');
+  });
+
+  it('17. MovieCard debe soportar estado por_ver (Watchlist)', async () => {
+    const spyEstado = jasmine.createSpy('onCambiarEstado');
+    const peliPorVer = { ...mockPelicula, estadoPerfil: 'por_ver' };
+    await act(async () => {
+      root.render(<MovieCard peli={peliPorVer} onCambiarEstado={spyEstado} />);
+    });
+
+    expect(container.textContent).toContain('Por ver');
+    const btnPorVer = container.querySelector('.btn-info');
+    btnPorVer.click();
+    expect(spyEstado).toHaveBeenCalledWith(1, 'por_ver');
+  });
+
+  it('18. Profile debe mostrar estadísticas de vistas, tiempo y promedio personal', async () => {
+    const pelis = [
+      { ...mockPelicula, id: 1, estadoPerfil: 'vista', duracion: '120 min', miPuntuacion: 5, generos: ['Acción'] },
+      { ...mockPelicula, id: 2, estadoPerfil: 'por_ver', duracion: '90 min', miPuntuacion: 3, generos: ['Drama'] },
+    ];
+    await act(async () => {
+      root.render(<Profile peliculas={pelis} onCambiarEstado={() => {}} onAbrirDetalles={() => {}} onCalificar={() => {}} />);
+    });
+
+    expect(container.textContent).toContain('2h');
+    expect(container.textContent).toContain('4.0/5');
+    expect(container.textContent).toContain('Acción');
   });
 });

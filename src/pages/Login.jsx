@@ -5,8 +5,9 @@ export default function Login({ onLogin, onRegister }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [enviando, setEnviando] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -20,16 +21,19 @@ export default function Login({ onLogin, onRegister }) {
       return;
     }
 
-    if (tab === 'login') {
-      const res = onLogin(username, password);
+    setEnviando(true);
+    try {
+      const res = tab === 'login'
+        ? await onLogin(username, password)
+        : await onRegister(username, password);
+
       if (res && !res.success) {
         setError(res.error);
       }
-    } else {
-      const res = onRegister(username, password);
-      if (res && !res.success) {
-        setError(res.error);
-      }
+    } catch (err) {
+      setError(err.message || 'Error al conectar con el servidor.');
+    } finally {
+      setEnviando(false);
     }
   };
 
@@ -49,17 +53,19 @@ export default function Login({ onLogin, onRegister }) {
         )}
 
         <div className="d-flex p-1 rounded-3 mb-4" style={{ backgroundColor: '#181d2a', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-          <button 
-            type="button" 
-            className={`btn w-50 py-2 btn-sm fw-bold rounded-2 ${tab === 'login' ? 'btn-7box-primary' : 'text-muted border-0 bg-transparent'}`} 
+          <button
+            type="button"
+            className={`btn w-50 py-2 btn-sm fw-bold rounded-2 ${tab === 'login' ? 'btn-7box-primary' : 'text-muted border-0 bg-transparent'}`}
             onClick={() => { setTab('login'); setError(''); }}
+            disabled={enviando}
           >
             Ingresar
           </button>
-          <button 
-            type="button" 
-            className={`btn w-50 py-2 btn-sm fw-bold rounded-2 ${tab === 'register' ? 'btn-7box-primary' : 'text-muted border-0 bg-transparent'}`} 
+          <button
+            type="button"
+            className={`btn w-50 py-2 btn-sm fw-bold rounded-2 ${tab === 'register' ? 'btn-7box-primary' : 'text-muted border-0 bg-transparent'}`}
             onClick={() => { setTab('register'); setError(''); }}
+            disabled={enviando}
           >
             Registrarse
           </button>
@@ -68,28 +74,32 @@ export default function Login({ onLogin, onRegister }) {
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label className="form-label text-light small fw-medium mb-1">Usuario</label>
-            <input 
-              type="text" 
-              value={username} 
-              onChange={(e) => setUsername(e.target.value)} 
-              className="form-control login-input w-100" 
-              placeholder="Tu usuario" 
-              required 
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="form-control login-input w-100"
+              placeholder="Tu usuario"
+              disabled={enviando}
+              required
             />
           </div>
           <div className="mb-4">
             <label className="form-label text-light small fw-medium mb-1">Contraseña</label>
-            <input 
-              type="password" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              className="form-control login-input w-100" 
-              placeholder="••••••••" 
-              required 
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="form-control login-input w-100"
+              placeholder="••••••••"
+              disabled={enviando}
+              required
             />
           </div>
-          <button type="submit" className="btn btn-7box-primary w-100">
-            {tab === 'login' ? 'Ingresar' : 'Crear Cuenta'}
+          <button type="submit" className="btn btn-7box-primary w-100" disabled={enviando}>
+            {enviando
+              ? (tab === 'login' ? 'Ingresando...' : 'Creando cuenta...')
+              : (tab === 'login' ? 'Ingresar' : 'Crear Cuenta')}
           </button>
         </form>
       </div>
