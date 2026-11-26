@@ -7,6 +7,7 @@ import cl.sevenbox.backend.repository.PeliculaRepository;
 import cl.sevenbox.backend.repository.UsuarioRepository;
 import java.util.List;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -16,20 +17,37 @@ public class DataInitializer implements CommandLineRunner {
     private final UsuarioRepository usuarioRepository;
     private final PeliculaRepository peliculaRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JdbcTemplate jdbcTemplate;
 
     public DataInitializer(
             UsuarioRepository usuarioRepository,
             PeliculaRepository peliculaRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            JdbcTemplate jdbcTemplate) {
         this.usuarioRepository = usuarioRepository;
         this.peliculaRepository = peliculaRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
     public void run(String... args) {
+        migrarColumnasEnum();
         seedUsuarios();
         seedPeliculas();
+    }
+
+    private void migrarColumnasEnum() {
+        try {
+            jdbcTemplate.execute("ALTER TABLE interacciones_usuario ALTER COLUMN estado_perfil VARCHAR(20)");
+        } catch (Exception ignored) {
+            // Ignorar si la tabla aun no existe o el motor SQL ya usa VARCHAR
+        }
+        try {
+            jdbcTemplate.execute("ALTER TABLE usuarios ALTER COLUMN role VARCHAR(20)");
+        } catch (Exception ignored) {
+            // Ignorar si la tabla aun no existe o el motor SQL ya usa VARCHAR
+        }
     }
 
     private void seedUsuarios() {

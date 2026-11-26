@@ -33,7 +33,7 @@ public class InteraccionUsuario {
     private Pelicula pelicula;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
     private EstadoPerfil estadoPerfil = EstadoPerfil.NINGUNO;
 
     @Column

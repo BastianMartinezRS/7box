@@ -6,7 +6,6 @@ import MovieCard from '../components/MovieCard';
 export default function Home({ peliculas, filtroBusqueda, onCambiarEstado, onAbrirDetalles, onCalificar }) {
   const [filtroPerfil, setFiltroPerfil] = useState('todas');
   const [filtroGenero, setFiltroGenero] = useState('todos');
-  const [ordenCatalogo, setOrdenCatalogo] = useState('reciente');
 
   const generosDisponibles = useMemo(() => {
     const set = new Set();
@@ -22,24 +21,14 @@ export default function Home({ peliculas, filtroBusqueda, onCambiarEstado, onAbr
 
   const peliculasFiltradas = useMemo(() => {
     const texto = filtroBusqueda.toLowerCase();
-    const filtradas = peliculas.filter((p) => {
+    return peliculas.filter((p) => {
       const coincideTitulo = p.titulo.toLowerCase().includes(texto);
       const coincideGenero =
         filtroGenero === 'todos' ||
         (Array.isArray(p.generos) && p.generos.some((g) => g.toLowerCase() === filtroGenero.toLowerCase()));
       return coincideTitulo && coincideGenero;
     });
-
-    const copia = [...filtradas];
-    if (ordenCatalogo === 'nota_desc') {
-      copia.sort((a, b) => parseFloat(b.rating || b.nota || 0) - parseFloat(a.rating || a.nota || 0));
-    } else if (ordenCatalogo === 'nota_asc') {
-      copia.sort((a, b) => parseFloat(a.rating || a.nota || 0) - parseFloat(b.rating || b.nota || 0));
-    } else if (ordenCatalogo === 'titulo_asc') {
-      copia.sort((a, b) => a.titulo.localeCompare(b.titulo, 'es'));
-    }
-    return copia;
-  }, [peliculas, filtroBusqueda, filtroGenero, ordenCatalogo]);
+  }, [peliculas, filtroBusqueda, filtroGenero]);
 
   // Listas calculadas
   const recomendadas = peliculasFiltradas.filter((p) => parseFloat(p.rating || p.nota) >= 4.0);
@@ -59,7 +48,7 @@ export default function Home({ peliculas, filtroBusqueda, onCambiarEstado, onAbr
         <p className="text-muted small">Haz clic sobre un póster para ver toda su información, tráiler y reseñas.</p>
       </div>
 
-      {/* BARRA DE FILTROS DE CATÁLOGO (GÉNERO Y ORDEN) */}
+      {/* BARRA DE FILTRO POR GÉNERO */}
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 p-3 rounded-3 bg-dark border border-secondary">
         <div className="d-flex flex-wrap align-items-center gap-2">
           <span className="small text-muted fw-bold me-1">
@@ -79,35 +68,14 @@ export default function Home({ peliculas, filtroBusqueda, onCambiarEstado, onAbr
               </option>
             ))}
           </select>
-        </div>
 
-        <div className="d-flex flex-wrap align-items-center gap-2">
-          <span className="small text-muted fw-bold me-1">
-            <i className="bi bi-sort-down text-primary me-1"></i> Ordenar:
-          </span>
-          <select
-            aria-label="Ordenar catálogo"
-            className="form-select form-select-sm bg-black text-white border-secondary"
-            style={{ width: 'auto', minWidth: '185px' }}
-            value={ordenCatalogo}
-            onChange={(e) => setOrdenCatalogo(e.target.value)}
-          >
-            <option value="reciente">Más recientes primero</option>
-            <option value="nota_desc">Mejor nota (mayor a menor)</option>
-            <option value="nota_asc">Menor nota (menor a mayor)</option>
-            <option value="titulo_asc">Título (A - Z)</option>
-          </select>
-
-          {(filtroGenero !== 'todos' || ordenCatalogo !== 'reciente') && (
+          {filtroGenero !== 'todos' && (
             <button
               type="button"
               className="btn btn-sm btn-outline-secondary"
-              onClick={() => {
-                setFiltroGenero('todos');
-                setOrdenCatalogo('reciente');
-              }}
+              onClick={() => setFiltroGenero('todos')}
             >
-              Limpiar filtros
+              Limpiar filtro
             </button>
           )}
         </div>

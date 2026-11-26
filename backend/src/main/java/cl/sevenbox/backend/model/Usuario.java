@@ -24,7 +24,7 @@ public class Usuario {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
     private Role role = Role.ROLE_USER;
 
     public Usuario() {}
