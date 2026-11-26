@@ -301,4 +301,53 @@ class SevenboxBackendApplicationTests {
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isNoContent());
     }
+
+    @Test
+    void top4FavoritasAndChangePasswordShouldWork() throws Exception {
+        MvcResult reg = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"fav_user\",\"password\":\"clave123\"}"))
+                .andExpect(status().isCreated())
+                .andReturn();
+        String token = objectMapper.readTree(reg.getResponse().getContentAsString()).get("token").asText();
+
+        MvcResult listRes = mockMvc.perform(get("/api/peliculas")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andReturn();
+        JsonNode movies = objectMapper.readTree(listRes.getResponse().getContentAsString());
+
+        // Marcar 4 películas como favoritas debe funcionar
+        for (int i = 0; i < 4; i++) {
+            long id = movies.get(i).get("id").asLong();
+            mockMvc.perform(put("/api/peliculas/" + id + "/perfil")
+                            .header("Authorization", "Bearer " + token)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"esFavorita\":true}"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.esFavorita").value(true));
+        }
+
+        // La 5ta favorita debe ser rechazada (400)
+        long fifthId = movies.get(4).get("id").asLong();
+        mockMvc.perform(put("/api/peliculas/" + fifthId + "/perfil")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"esFavorita\":true}"))
+                .andExpect(status().isBadRequest());
+
+        // Cambio de contraseña
+        mockMvc.perform(put("/api/auth/password")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"currentPassword\":\"clave123\",\"newPassword\":\"nuevaClave456\"}"))
+                .andExpect(status().isOk());
+
+        // Login con nueva contraseña
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"fav_user\",\"password\":\"nuevaClave456\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").isNotEmpty());
+    }
 }

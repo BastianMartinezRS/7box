@@ -79,6 +79,13 @@ export function getCurrentUserRequest() {
   return request('/auth/me');
 }
 
+export function changePasswordRequest(currentPassword, newPassword) {
+  return request('/auth/password', {
+    method: 'PUT',
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+}
+
 export function getPeliculasRequest() {
   return request('/peliculas');
 }

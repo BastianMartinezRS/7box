@@ -98,7 +98,7 @@ function PeliculaFormModalBody({ peliculaAEditar, onAgregarPelicula, onEditarPel
   };
 
   return (
-    <div className="modal-body p-4">
+    <div className="modal-body p-3 p-sm-4">
       {errorForm && (
         <div className="alert-7box-error py-2 px-3 small mb-3">
           {errorForm}
@@ -156,7 +156,88 @@ function PeliculaFormModalBody({ peliculaAEditar, onAgregarPelicula, onEditarPel
   );
 }
 
-function PeliculaResenasSection({ peliculaId, esAdmin }) {
+function ChangePasswordModalBody({ onCambiarClave }) {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [guardando, setGuardando] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (newPassword.length < 4) {
+      setError('La nueva contraseña debe tener al menos 4 caracteres.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('La confirmación no coincide con la nueva contraseña.');
+      return;
+    }
+
+    setGuardando(true);
+    try {
+      await onCambiarClave(currentPassword, newPassword);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      ocultarModal('modalCambiarClave');
+    } catch (err) {
+      setError(err.message || 'No se pudo cambiar la contraseña.');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  return (
+    <div className="modal-body p-3 p-sm-4">
+      {error && <div className="alert-7box-error py-2 px-3 small mb-3">{error}</div>}
+      <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <label className="form-label small text-muted">Contraseña actual</label>
+          <input
+            type="password"
+            className="form-control bg-dark text-white border-secondary"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label className="form-label small text-muted">Nueva contraseña</label>
+          <input
+            type="password"
+            className="form-control bg-dark text-white border-secondary"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label className="form-label small text-muted">Confirmar nueva contraseña</label>
+          <input
+            type="password"
+            className="form-control bg-dark text-white border-secondary"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+        </div>
+        <div className="d-flex justify-content-end gap-2">
+          <button type="button" className="btn btn-secondary btn-sm" data-bs-dismiss="modal" disabled={guardando}>
+            Cancelar
+          </button>
+          <button type="submit" className="btn btn-success btn-sm fw-bold" disabled={guardando}>
+            {guardando ? 'Actualizando...' : 'Actualizar contraseña'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function PeliculaResenasSection({ peliculaId, esAdmin, onNotify }) {
   const [resenas, setResenas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [comentario, setComentario] = useState('');
@@ -201,6 +282,7 @@ function PeliculaResenasSection({ peliculaId, esAdmin }) {
       setResenas((prev) => [creada, ...prev]);
       setComentario('');
       setPuntuacion('');
+      onNotify?.('Reseña publicada.');
     } catch (err) {
       setError(err.message || 'No se pudo publicar la reseña.');
     } finally {
@@ -225,6 +307,7 @@ function PeliculaResenasSection({ peliculaId, esAdmin }) {
       });
       setResenas((prev) => prev.map((r) => (r.id === resenaId ? actualizada : r)));
       setEditandoId(null);
+      onNotify?.('Reseña actualizada.');
     } catch (err) {
       setError(err.message || 'No se pudo actualizar la reseña.');
     }
@@ -235,6 +318,7 @@ function PeliculaResenasSection({ peliculaId, esAdmin }) {
     try {
       await deleteResenaRequest(resenaId);
       setResenas((prev) => prev.filter((r) => r.id !== resenaId));
+      onNotify?.('Reseña eliminada.');
     } catch (err) {
       setError(err.message || 'No se pudo eliminar la reseña.');
     }
@@ -294,7 +378,7 @@ function PeliculaResenasSection({ peliculaId, esAdmin }) {
         <div className="d-flex flex-column gap-2" style={{ maxHeight: '240px', overflowY: 'auto' }}>
           {resenas.map((r) => (
             <div key={r.id} className="p-3 rounded bg-dark border border-secondary">
-              <div className="d-flex justify-content-between align-items-center mb-1 gap-2">
+              <div className="d-flex justify-content-between align-items-center mb-1 gap-2 flex-wrap">
                 <div className="d-flex align-items-center gap-2">
                   <span className="fw-bold text-info small">{r.username}</span>
                   {r.esMia && <span className="badge bg-secondary extra-small">Tú</span>}
@@ -379,6 +463,8 @@ function PeliculaDetalleBody({
   onEliminarPelicula,
   onCambiarEstado,
   onCalificar,
+  onToggleFavorita,
+  onNotify,
 }) {
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
   const [mostrarTrailer, setMostrarTrailer] = useState(false);
@@ -397,17 +483,18 @@ function PeliculaDetalleBody({
 
   return (
     <div>
-      <div className="row g-4 align-items-center">
-        <div className="col-md-5 text-center">
+      <div className="row g-3 g-md-4 align-items-center">
+        <div className="col-12 col-md-5 text-center">
           <img
             src={peliculaSeleccionada.imagen}
             className="img-fluid rounded-3 shadow"
+            style={{ maxHeight: '380px', objectFit: 'cover' }}
             alt={peliculaSeleccionada.titulo}
             onError={handlePosterError}
           />
         </div>
-        <div className="col-md-7">
-          <h2 className="fw-bold text-white mb-1">{peliculaSeleccionada.titulo}</h2>
+        <div className="col-12 col-md-7">
+          <h2 className="fw-bold text-white mb-1 pe-4 fs-4 fs-md-2">{peliculaSeleccionada.titulo}</h2>
           <p className="text-secondary fst-italic small mb-3">{peliculaSeleccionada.tagline || ''}</p>
           <p className="text-light small lh-base mb-3">{peliculaSeleccionada.sinopsis || 'Sin sinopsis disponible.'}</p>
 
@@ -421,6 +508,17 @@ function PeliculaDetalleBody({
           </div>
 
           <div className="mb-3 d-flex flex-wrap align-items-center gap-2">
+            <button
+              type="button"
+              className={`btn btn-sm fw-bold d-inline-flex align-items-center gap-1 ${
+                peliculaSeleccionada.esFavorita ? 'btn-danger text-white' : 'btn-outline-danger'
+              }`}
+              onClick={() => onToggleFavorita && onToggleFavorita(peliculaSeleccionada.id)}
+            >
+              <i className={`bi ${peliculaSeleccionada.esFavorita ? 'bi-heart-fill' : 'bi-heart'}`}></i>
+              {peliculaSeleccionada.esFavorita ? 'En Top 4' : 'Top 4 Favorita'}
+            </button>
+
             {embedUrl && (
               <button
                 type="button"
@@ -439,7 +537,7 @@ function PeliculaDetalleBody({
                 rel="noreferrer"
                 className="btn btn-outline-danger btn-sm fw-bold px-3 d-inline-flex align-items-center gap-2"
               >
-                <i className="bi bi-youtube fs-6"></i> Abrir en YouTube
+                <i className="bi bi-youtube fs-6"></i> YouTube
               </a>
             )}
 
@@ -486,9 +584,9 @@ function PeliculaDetalleBody({
             )}
           </div>
 
-          {/* BOTONES DE ESTADO (VISTA, POR VER, ABANDONADA, NO ME GUSTÓ) */}
+          {/* BOTONES DE ESTADO (RESPONSIVO EN MÓVIL) */}
           <div className="p-3 mb-3 rounded bg-dark border border-secondary">
-            <div className="d-flex justify-content-between align-items-center mb-2">
+            <div className="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
               <span className="text-light fw-bold small">
                 <i className="bi bi-bookmark-fill text-primary me-1"></i> Estado en mi lista:
               </span>
@@ -498,35 +596,43 @@ function PeliculaDetalleBody({
                 </span>
               )}
             </div>
-            <div className="btn-group btn-group-sm w-100 flex-wrap" role="group">
-              <button
-                type="button"
-                className={`btn ${peliculaSeleccionada.estadoPerfil === 'vista' ? 'btn-success text-white fw-bold' : 'btn-outline-success'}`}
-                onClick={() => onCambiarEstado && onCambiarEstado(peliculaSeleccionada.id, 'vista')}
-              >
-                <i className="bi bi-check-circle-fill me-1"></i> Vista
-              </button>
-              <button
-                type="button"
-                className={`btn ${peliculaSeleccionada.estadoPerfil === 'por_ver' ? 'btn-info text-dark fw-bold' : 'btn-outline-info'}`}
-                onClick={() => onCambiarEstado && onCambiarEstado(peliculaSeleccionada.id, 'por_ver')}
-              >
-                <i className="bi bi-bookmark-plus-fill me-1"></i> Por ver
-              </button>
-              <button
-                type="button"
-                className={`btn ${peliculaSeleccionada.estadoPerfil === 'abandonada' ? 'btn-warning text-dark fw-bold' : 'btn-outline-warning'}`}
-                onClick={() => onCambiarEstado && onCambiarEstado(peliculaSeleccionada.id, 'abandonada')}
-              >
-                <i className="bi bi-pause-circle-fill me-1"></i> Abandonada
-              </button>
-              <button
-                type="button"
-                className={`btn ${peliculaSeleccionada.estadoPerfil === 'no_gusto' ? 'btn-danger text-white fw-bold' : 'btn-outline-danger'}`}
-                onClick={() => onCambiarEstado && onCambiarEstado(peliculaSeleccionada.id, 'no_gusto')}
-              >
-                <i className="bi bi-x-circle-fill me-1"></i> No me gustó
-              </button>
+            <div className="row row-cols-2 row-cols-sm-4 g-2">
+              <div className="col">
+                <button
+                  type="button"
+                  className={`btn btn-sm w-100 ${peliculaSeleccionada.estadoPerfil === 'vista' ? 'btn-success text-white fw-bold' : 'btn-outline-success'}`}
+                  onClick={() => onCambiarEstado && onCambiarEstado(peliculaSeleccionada.id, 'vista')}
+                >
+                  <i className="bi bi-check-circle-fill me-1"></i> Vista
+                </button>
+              </div>
+              <div className="col">
+                <button
+                  type="button"
+                  className={`btn btn-sm w-100 ${peliculaSeleccionada.estadoPerfil === 'por_ver' ? 'btn-info text-dark fw-bold' : 'btn-outline-info'}`}
+                  onClick={() => onCambiarEstado && onCambiarEstado(peliculaSeleccionada.id, 'por_ver')}
+                >
+                  <i className="bi bi-bookmark-plus-fill me-1"></i> Por ver
+                </button>
+              </div>
+              <div className="col">
+                <button
+                  type="button"
+                  className={`btn btn-sm w-100 ${peliculaSeleccionada.estadoPerfil === 'abandonada' ? 'btn-warning text-dark fw-bold' : 'btn-outline-warning'}`}
+                  onClick={() => onCambiarEstado && onCambiarEstado(peliculaSeleccionada.id, 'abandonada')}
+                >
+                  <i className="bi bi-pause-circle-fill me-1"></i> Aband.
+                </button>
+              </div>
+              <div className="col">
+                <button
+                  type="button"
+                  className={`btn btn-sm w-100 ${peliculaSeleccionada.estadoPerfil === 'no_gusto' ? 'btn-danger text-white fw-bold' : 'btn-outline-danger'}`}
+                  onClick={() => onCambiarEstado && onCambiarEstado(peliculaSeleccionada.id, 'no_gusto')}
+                >
+                  <i className="bi bi-x-circle-fill me-1"></i> No gustó
+                </button>
+              </div>
             </div>
           </div>
 
@@ -537,7 +643,7 @@ function PeliculaDetalleBody({
                 {peliculaSeleccionada.miPuntuacion ? `${peliculaSeleccionada.miPuntuacion} / 5` : 'Sin puntuar'}
               </span>
             </div>
-            <div className="d-flex gap-2 align-items-center">
+            <div className="d-flex gap-2 align-items-center flex-wrap">
               {[1, 2, 3, 4, 5].map((star) => (
                 <i
                   key={star}
@@ -559,32 +665,32 @@ function PeliculaDetalleBody({
           </div>
 
           <div className="row g-2 mt-2 text-center">
-            <div className="col-6 col-md-4">
-              <div className="bg-dark p-2 rounded border border-secondary">
+            <div className="col-6 col-sm-4">
+              <div className="bg-dark p-2 rounded border border-secondary h-100">
                 <small className="text-muted d-block extra-small">Director</small>
                 <span className="fw-bold text-white small">{peliculaSeleccionada.director || 'Desconocido'}</span>
               </div>
             </div>
-            <div className="col-6 col-md-4">
-              <div className="bg-dark p-2 rounded border border-secondary">
+            <div className="col-6 col-sm-4">
+              <div className="bg-dark p-2 rounded border border-secondary h-100">
                 <small className="text-muted d-block extra-small">Fecha</small>
                 <span className="fw-bold text-white small">{peliculaSeleccionada.fecha || 'N/A'}</span>
               </div>
             </div>
-            <div className="col-6 col-md-4">
-              <div className="bg-dark p-2 rounded border border-secondary">
+            <div className="col-12 col-sm-4">
+              <div className="bg-dark p-2 rounded border border-secondary h-100">
                 <small className="text-muted d-block extra-small">Duración</small>
                 <span className="fw-bold text-white small">{peliculaSeleccionada.duracion || 'N/A'}</span>
               </div>
             </div>
-            <div className="col-4">
-              <div className="bg-dark p-2 rounded border border-secondary">
+            <div className="col-6 col-sm-4">
+              <div className="bg-dark p-2 rounded border border-secondary h-100">
                 <small className="text-muted d-block extra-small">IMDb</small>
                 <span className="fw-bold text-warning small">{peliculaSeleccionada.rating || peliculaSeleccionada.nota || 'N/A'}</span>
               </div>
             </div>
-            <div className="col-4">
-              <div className="bg-dark p-2 rounded border border-secondary">
+            <div className="col-6 col-sm-4">
+              <div className="bg-dark p-2 rounded border border-secondary h-100">
                 <small className="text-muted d-block extra-small">Comunidad 7box</small>
                 <span className="fw-bold text-info small">
                   {peliculaSeleccionada.promedioComunidad
@@ -593,8 +699,8 @@ function PeliculaDetalleBody({
                 </span>
               </div>
             </div>
-            <div className="col-4">
-              <div className="bg-dark p-2 rounded border border-secondary">
+            <div className="col-12 col-sm-4">
+              <div className="bg-dark p-2 rounded border border-secondary h-100">
                 <small className="text-muted d-block extra-small">Votos</small>
                 <span className="fw-bold text-white small">{peliculaSeleccionada.votos || '0'}</span>
               </div>
@@ -618,7 +724,7 @@ function PeliculaDetalleBody({
       )}
 
       {/* RESEÑAS DE LA COMUNIDAD */}
-      <PeliculaResenasSection peliculaId={peliculaSeleccionada.id} esAdmin={esAdmin} />
+      <PeliculaResenasSection peliculaId={peliculaSeleccionada.id} esAdmin={esAdmin} onNotify={onNotify} />
     </div>
   );
 }
@@ -633,6 +739,9 @@ export default function Modals({
   onSolicitarEdicion,
   onCalificar,
   onCambiarEstado,
+  onToggleFavorita,
+  onCambiarClave,
+  onNotify,
 }) {
   return (
     <>
@@ -659,11 +768,27 @@ export default function Modals({
         </div>
       )}
 
+      {/* MODAL CAMBIAR CONTRASEÑA */}
+      <div className="modal fade" id="modalCambiarClave" tabIndex="-1" aria-hidden="true">
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content bg-modal text-white border-0 shadow-lg">
+            <div className="modal-header border-secondary">
+              <h5 className="modal-title fw-bold text-primary">
+                <i className="bi bi-key-fill me-2"></i>
+                Cambiar Contraseña
+              </h5>
+              <button type="button" className="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <ChangePasswordModalBody onCambiarClave={onCambiarClave} />
+          </div>
+        </div>
+      </div>
+
       {/* MODAL DETALLES DE PELÍCULA */}
       <div className="modal fade" id="modalPelicula" tabIndex="-1" aria-hidden="true">
         <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
           <div className="modal-content bg-modal text-white border-0 shadow-lg">
-            <div className="modal-body p-4 position-relative">
+            <div className="modal-body p-3 p-sm-4 position-relative">
               <button type="button" className="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3" data-bs-dismiss="modal"></button>
 
               {peliculaSeleccionada && (
@@ -675,6 +800,8 @@ export default function Modals({
                   onEliminarPelicula={onEliminarPelicula}
                   onCambiarEstado={onCambiarEstado}
                   onCalificar={onCalificar}
+                  onToggleFavorita={onToggleFavorita}
+                  onNotify={onNotify}
                 />
               )}
             </div>

@@ -48,6 +48,7 @@ public final class PeliculaDtos {
             String trailer,
             String estadoPerfil,
             Integer miPuntuacion,
+            boolean esFavorita,
             Double promedioComunidad,
             Long totalVotosComunidad
     ) {}
@@ -57,6 +58,7 @@ public final class PeliculaDtos {
             @Min(value = 1, message = "La puntuación mínima es 1.")
             @Max(value = 5, message = "La puntuación máxima es 5.")
             Integer miPuntuacion,
-            Boolean quitarPuntuacion
+            Boolean quitarPuntuacion,
+            Boolean esFavorita
     ) {}
 }

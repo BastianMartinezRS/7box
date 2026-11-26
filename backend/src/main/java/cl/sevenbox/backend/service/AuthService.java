@@ -2,6 +2,7 @@ package cl.sevenbox.backend.service;
 
 import cl.sevenbox.backend.dto.AuthDtos.AuthRequest;
 import cl.sevenbox.backend.dto.AuthDtos.AuthResponse;
+import cl.sevenbox.backend.dto.AuthDtos.ChangePasswordRequest;
 import cl.sevenbox.backend.dto.AuthDtos.UserInfoResponse;
 import cl.sevenbox.backend.exception.BusinessException;
 import cl.sevenbox.backend.exception.ResourceNotFoundException;
@@ -122,6 +123,31 @@ public class AuthService {
                 usuario.getRole().name(),
                 usuario.getRole() == Role.ROLE_ADMIN
         );
+    }
+
+    @Transactional
+    public void changePassword(String username, ChangePasswordRequest request) {
+        Usuario usuario = usuarioRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado."));
+
+        String actual = request.currentPassword() == null ? "" : request.currentPassword();
+        String nueva = request.newPassword() == null ? "" : request.newPassword();
+
+        if (!passwordEncoder.matches(actual, usuario.getPassword())) {
+            throw new BusinessException("La contraseña actual es incorrecta.", HttpStatus.BAD_REQUEST);
+        }
+        if (nueva.trim().isEmpty()) {
+            throw new BusinessException("La nueva contraseña es obligatoria.", HttpStatus.BAD_REQUEST);
+        }
+        if (nueva.length() < 4) {
+            throw new BusinessException("La nueva contraseña debe tener al menos 4 caracteres.", HttpStatus.BAD_REQUEST);
+        }
+        if (nueva.length() > 50) {
+            throw new BusinessException("La nueva contraseña no puede exceder 50 caracteres.", HttpStatus.BAD_REQUEST);
+        }
+
+        usuario.setPassword(passwordEncoder.encode(nueva));
+        usuarioRepository.save(usuario);
     }
 
     private AuthResponse buildAuthResponse(Usuario usuario) {

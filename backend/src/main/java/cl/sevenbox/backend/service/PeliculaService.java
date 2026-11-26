@@ -3,7 +3,9 @@ package cl.sevenbox.backend.service;
 import cl.sevenbox.backend.dto.PeliculaDtos.PeliculaRequest;
 import cl.sevenbox.backend.dto.PeliculaDtos.PeliculaResponse;
 import cl.sevenbox.backend.dto.PeliculaDtos.PerfilPeliculaRequest;
+import cl.sevenbox.backend.exception.BusinessException;
 import cl.sevenbox.backend.exception.ResourceNotFoundException;
+import org.springframework.http.HttpStatus;
 import cl.sevenbox.backend.model.EstadoPerfil;
 import cl.sevenbox.backend.model.InteraccionUsuario;
 import cl.sevenbox.backend.model.Pelicula;
@@ -124,6 +126,19 @@ public class PeliculaService {
             interaccion.setMiPuntuacion(request.miPuntuacion());
         }
 
+        if (request.esFavorita() != null) {
+            if (Boolean.TRUE.equals(request.esFavorita()) && !interaccion.isEsFavorita()) {
+                long totalFavoritas = interaccionRepository.countByUsuarioIdAndEsFavoritaTrue(usuario.getId());
+                if (totalFavoritas >= 4) {
+                    throw new BusinessException(
+                            "Solo puedes fijar hasta 4 películas en tu Top 4 de favoritas.",
+                            HttpStatus.BAD_REQUEST
+                    );
+                }
+            }
+            interaccion.setEsFavorita(Boolean.TRUE.equals(request.esFavorita()));
+        }
+
         InteraccionUsuario guardada = interaccionRepository.save(interaccion);
         CommunityStats stats = cargarEstadisticasComunidad().get(pelicula.getId());
         return toResponse(pelicula, guardada, stats);
@@ -191,6 +206,7 @@ public class PeliculaService {
                 ? interaccion.getEstadoPerfil().getValor()
                 : EstadoPerfil.NINGUNO.getValor();
         Integer puntuacion = interaccion != null ? interaccion.getMiPuntuacion() : null;
+        boolean esFavorita = interaccion != null && interaccion.isEsFavorita();
         Double promedio = stats != null ? stats.promedio() : null;
         Long totalVotos = stats != null ? stats.totalVotos() : 0L;
 
@@ -210,6 +226,7 @@ public class PeliculaService {
                 p.getTrailer(),
                 estado,
                 puntuacion,
+                esFavorita,
                 promedio,
                 totalVotos
         );

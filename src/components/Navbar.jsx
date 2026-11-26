@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-export default function Navbar({ usuarioActual, onSearch, onLogout, onNuevaPelicula }) {
+export default function Navbar({ usuarioActual, onSearch, onLogout, onNuevaPelicula, onAbrirCambiarClave }) {
   const navigate = useNavigate();
   const esAdmin = usuarioActual?.role === 'ROLE_ADMIN' || usuarioActual?.esAdmin === true;
 
@@ -56,11 +56,11 @@ export default function Navbar({ usuarioActual, onSearch, onLogout, onNuevaPelic
             )}
 
             {/* BUSCADOR */}
-            <div className="w-100 my-1 my-lg-0" style={{ maxWidth: '250px' }}>
+            <div className="navbar-search-wrap my-1 my-lg-0">
               <input
                 type="text"
                 className="form-control form-control-sm bg-dark text-white border-secondary w-100"
-                placeholder="Buscar película..."
+                placeholder="Buscar título o director..."
                 onChange={(e) => onSearch(e.target.value)}
               />
             </div>
@@ -73,20 +73,34 @@ export default function Navbar({ usuarioActual, onSearch, onLogout, onNuevaPelic
               <i className="bi bi-person-circle"></i> <span>Mi Perfil</span>
             </Link>
 
-            {/* USUARIO Y BOTÓN LOGOUT */}
+            {/* USUARIO, CAMBIAR CLAVE Y LOGOUT */}
             <div className="d-flex align-items-center justify-content-between justify-content-lg-end gap-2 pt-2 pt-lg-0">
               <span className="fw-bold text-info small text-nowrap d-flex align-items-center gap-1">
                 {usuarioActual?.nombre || 'Usuario'}
                 {esAdmin && <span className="badge bg-success text-dark extra-small">ADMIN</span>}
               </span>
 
-              <button
-                onClick={handleLogout}
-                className="btn btn-outline-danger btn-sm d-flex align-items-center justify-content-center px-3"
-                title="Cerrar sesión"
-              >
-                <i className="bi bi-box-arrow-right"></i> <span className="d-lg-none ms-2">Cerrar Sesión</span>
-              </button>
+              <div className="d-flex align-items-center gap-2">
+                {onAbrirCambiarClave && (
+                  <button
+                    id="btn-cambiar-clave"
+                    type="button"
+                    onClick={onAbrirCambiarClave}
+                    className="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center px-2"
+                    title="Cambiar contraseña"
+                  >
+                    <i className="bi bi-key-fill"></i>
+                  </button>
+                )}
+
+                <button
+                  onClick={handleLogout}
+                  className="btn btn-outline-danger btn-sm d-flex align-items-center justify-content-center px-3"
+                  title="Cerrar sesión"
+                >
+                  <i className="bi bi-box-arrow-right"></i> <span className="d-lg-none ms-2">Cerrar Sesión</span>
+                </button>
+              </div>
             </div>
 
           </div>

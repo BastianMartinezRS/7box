@@ -20,13 +20,16 @@ export default function Home({ peliculas, filtroBusqueda, onCambiarEstado, onAbr
   }, [peliculas]);
 
   const peliculasFiltradas = useMemo(() => {
-    const texto = filtroBusqueda.toLowerCase();
+    const texto = filtroBusqueda.trim().toLowerCase();
     return peliculas.filter((p) => {
-      const coincideTitulo = p.titulo.toLowerCase().includes(texto);
+      const coincideTexto =
+        !texto ||
+        p.titulo.toLowerCase().includes(texto) ||
+        (p.director || '').toLowerCase().includes(texto);
       const coincideGenero =
         filtroGenero === 'todos' ||
         (Array.isArray(p.generos) && p.generos.some((g) => g.toLowerCase() === filtroGenero.toLowerCase()));
-      return coincideTitulo && coincideGenero;
+      return coincideTexto && coincideGenero;
     });
   }, [peliculas, filtroBusqueda, filtroGenero]);
 
@@ -42,22 +45,21 @@ export default function Home({ peliculas, filtroBusqueda, onCambiarEstado, onAbr
   });
 
   return (
-    <div className="container-fluid py-4 px-3 px-md-4">
+    <div className="container-fluid py-4 px-2 px-sm-3 px-md-4">
       <div className="text-center my-3">
         <h1 className="fw-bold fs-2 fs-md-1">¡Bienvenido a 7box!</h1>
         <p className="text-muted small">Haz clic sobre un póster para ver toda su información, tráiler y reseñas.</p>
       </div>
 
       {/* BARRA DE FILTRO POR GÉNERO */}
-      <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 p-3 rounded-3 bg-dark border border-secondary">
-        <div className="d-flex flex-wrap align-items-center gap-2">
-          <span className="small text-muted fw-bold me-1">
+      <div className="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center justify-content-between gap-2 mb-4 p-3 rounded-3 bg-dark border border-secondary">
+        <div className="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2">
+          <span className="small text-muted fw-bold">
             <i className="bi bi-funnel-fill text-primary me-1"></i> Género:
           </span>
           <select
             aria-label="Filtrar por género"
             className="form-select form-select-sm bg-black text-white border-secondary"
-            style={{ width: 'auto', minWidth: '170px' }}
             value={filtroGenero}
             onChange={(e) => setFiltroGenero(e.target.value)}
           >
@@ -72,7 +74,7 @@ export default function Home({ peliculas, filtroBusqueda, onCambiarEstado, onAbr
           {filtroGenero !== 'todos' && (
             <button
               type="button"
-              className="btn btn-sm btn-outline-secondary"
+              className="btn btn-sm btn-outline-secondary text-nowrap"
               onClick={() => setFiltroGenero('todos')}
             >
               Limpiar filtro
@@ -113,16 +115,16 @@ export default function Home({ peliculas, filtroBusqueda, onCambiarEstado, onAbr
             </Link>
           </div>
 
-          <div className="btn-group btn-group-sm flex-wrap">
-            <button className={`btn btn-outline-light ${filtroPerfil === 'todas' ? 'active' : ''}`} onClick={() => setFiltroPerfil('todas')}>Todas</button>
-            <button className={`btn btn-outline-success ${filtroPerfil === 'vista' ? 'active' : ''}`} onClick={() => setFiltroPerfil('vista')}>Vistas</button>
-            <button className={`btn btn-outline-info ${filtroPerfil === 'por_ver' ? 'active' : ''}`} onClick={() => setFiltroPerfil('por_ver')}>Por ver</button>
-            <button className={`btn btn-outline-warning ${filtroPerfil === 'abandonada' ? 'active' : ''}`} onClick={() => setFiltroPerfil('abandonada')}>Abandonadas</button>
-            <button className={`btn btn-outline-danger ${filtroPerfil === 'no_gusto' ? 'active' : ''}`} onClick={() => setFiltroPerfil('no_gusto')}>No me gustaron</button>
+          <div className="d-flex flex-wrap gap-1">
+            <button className={`btn btn-sm btn-outline-light ${filtroPerfil === 'todas' ? 'active' : ''}`} onClick={() => setFiltroPerfil('todas')}>Todas</button>
+            <button className={`btn btn-sm btn-outline-success ${filtroPerfil === 'vista' ? 'active' : ''}`} onClick={() => setFiltroPerfil('vista')}>Vistas</button>
+            <button className={`btn btn-sm btn-outline-info ${filtroPerfil === 'por_ver' ? 'active' : ''}`} onClick={() => setFiltroPerfil('por_ver')}>Por ver</button>
+            <button className={`btn btn-sm btn-outline-warning ${filtroPerfil === 'abandonada' ? 'active' : ''}`} onClick={() => setFiltroPerfil('abandonada')}>Abandonadas</button>
+            <button className={`btn btn-sm btn-outline-danger ${filtroPerfil === 'no_gusto' ? 'active' : ''}`} onClick={() => setFiltroPerfil('no_gusto')}>No me gustaron</button>
           </div>
         </div>
 
-        <div className="d-flex flex-wrap gap-3">
+        <div className="profile-grid">
           {peliculasPerfil.length === 0 ? (
             <p className="text-muted small">No hay películas en esta categoría.</p>
           ) : (

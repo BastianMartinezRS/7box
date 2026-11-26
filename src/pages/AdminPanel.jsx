@@ -13,6 +13,7 @@ export default function AdminPanel({
   onSolicitarEdicion,
   onEliminarPelicula,
   onAbrirDetalles,
+  onNotify,
 }) {
   const [tab, setTab] = useState('peliculas');
   const [busqueda, setBusqueda] = useState('');
@@ -68,25 +69,27 @@ export default function AdminPanel({
     try {
       const actualizado = await changeUserRoleRequest(usuario.id, nuevoRol);
       setUsuarios((prev) => prev.map((u) => (u.id === usuario.id ? actualizado : u)));
+      onNotify?.(`Rol de "${usuario.username}" actualizado a ${actualizado.esAdmin ? 'ADMIN' : 'USER'}.`);
     } catch (err) {
       setError(err.message || 'No se pudo cambiar el rol.');
     }
   };
 
-  const handleEliminarUsuario = async (id) => {
+  const handleEliminarUsuario = async (usuario) => {
     setError('');
     try {
-      await deleteAdminUsuarioRequest(id);
-      setUsuarios((prev) => prev.filter((u) => u.id !== id));
+      await deleteAdminUsuarioRequest(usuario.id);
+      setUsuarios((prev) => prev.filter((u) => u.id !== usuario.id));
       setConfirmandoUsuarioId(null);
+      onNotify?.(`Usuario "${usuario.username}" eliminado.`);
     } catch (err) {
       setError(err.message || 'No se pudo eliminar el usuario.');
     }
   };
 
   return (
-    <div className="container-fluid py-4 px-3 px-md-4 mb-5">
-      <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 border-bottom border-secondary pb-3">
+    <div className="container-fluid py-4 px-2 px-sm-3 px-md-4 mb-5">
+      <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4 border-bottom border-secondary pb-3">
         <div>
           <span className="badge bg-success text-dark fw-bold mb-1">SOLO ADMINISTRADOR</span>
           <h3 className="fw-bold mb-0">
@@ -95,17 +98,17 @@ export default function AdminPanel({
           </h3>
         </div>
 
-        <div className="btn-group btn-group-sm">
+        <div className="d-flex flex-wrap gap-2">
           <button
             type="button"
-            className={`btn ${tab === 'peliculas' ? 'btn-success text-dark fw-bold' : 'btn-outline-light'}`}
+            className={`btn btn-sm ${tab === 'peliculas' ? 'btn-success text-dark fw-bold' : 'btn-outline-light'}`}
             onClick={() => { setTab('peliculas'); setError(''); }}
           >
             <i className="bi bi-film me-1"></i> Catálogo ({peliculas.length})
           </button>
           <button
             type="button"
-            className={`btn ${tab === 'usuarios' ? 'btn-success text-dark fw-bold' : 'btn-outline-light'}`}
+            className={`btn btn-sm ${tab === 'usuarios' ? 'btn-success text-dark fw-bold' : 'btn-outline-light'}`}
             onClick={() => { setTab('usuarios'); setError(''); setCargandoUsuarios(true); }}
           >
             <i className="bi bi-people-fill me-1"></i> Usuarios
@@ -122,18 +125,18 @@ export default function AdminPanel({
 
       {tab === 'peliculas' ? (
         <>
-          <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+          <div className="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center justify-content-between gap-2 mb-3">
             <input
               type="text"
               className="form-control form-control-sm bg-dark text-white border-secondary"
-              style={{ width: '240px' }}
+              style={{ maxWidth: '280px' }}
               placeholder="Filtrar película por título..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
             />
             <button
               type="button"
-              className="btn btn-sm btn-success fw-bold d-flex align-items-center gap-1"
+              className="btn btn-sm btn-success fw-bold d-flex align-items-center justify-content-center gap-1"
               onClick={onNuevaPelicula}
             >
               <i className="bi bi-plus-lg"></i> Nueva Película
@@ -146,9 +149,9 @@ export default function AdminPanel({
                 <tr className="text-secondary small">
                   <th>Póster</th>
                   <th>Título</th>
-                  <th>Director</th>
+                  <th className="d-none d-md-table-cell">Director</th>
                   <th>Nota</th>
-                  <th>Duración</th>
+                  <th className="d-none d-lg-table-cell">Duración</th>
                   <th className="text-end">Acciones</th>
                 </tr>
               </thead>
@@ -173,22 +176,22 @@ export default function AdminPanel({
                         />
                       </td>
                       <td className="fw-semibold">{peli.titulo}</td>
-                      <td className="text-muted small">{peli.director || 'Desconocido'}</td>
+                      <td className="text-muted small d-none d-md-table-cell">{peli.director || 'Desconocido'}</td>
                       <td>
                         <span className="badge bg-warning text-dark">
                           <i className="bi bi-star-fill me-1"></i>
                           {peli.nota ?? peli.rating ?? 'N/A'}
                         </span>
                       </td>
-                      <td className="text-muted small">{peli.duracion || 'N/A'}</td>
+                      <td className="text-muted small d-none d-lg-table-cell">{peli.duracion || 'N/A'}</td>
                       <td className="text-end">
-                        <div className="d-inline-flex gap-2">
+                        <div className="d-inline-flex flex-wrap justify-content-end gap-1">
                           <button
                             type="button"
                             className="btn btn-sm btn-outline-info"
                             onClick={() => onSolicitarEdicion(peli)}
                           >
-                            <i className="bi bi-pencil-square me-1"></i> Editar
+                            <i className="bi bi-pencil-square"></i> <span className="d-none d-sm-inline">Editar</span>
                           </button>
 
                           {confirmandoId === peli.id ? (
@@ -199,7 +202,7 @@ export default function AdminPanel({
                                 disabled={eliminandoId === peli.id}
                                 onClick={() => handleConfirmarEliminar(peli.id)}
                               >
-                                {eliminandoId === peli.id ? 'Eliminando...' : 'Confirmar'}
+                                {eliminandoId === peli.id ? '...' : 'Confirmar'}
                               </button>
                               <button
                                 type="button"
@@ -215,7 +218,7 @@ export default function AdminPanel({
                               className="btn btn-sm btn-outline-danger"
                               onClick={() => setConfirmandoId(peli.id)}
                             >
-                              <i className="bi bi-trash-fill me-1"></i> Eliminar
+                              <i className="bi bi-trash-fill"></i> <span className="d-none d-sm-inline">Eliminar</span>
                             </button>
                           )}
                         </div>
@@ -232,7 +235,7 @@ export default function AdminPanel({
           <table className="table table-dark table-hover align-middle mb-0">
             <thead>
               <tr className="text-secondary small">
-                <th>ID</th>
+                <th className="d-none d-sm-table-cell">ID</th>
                 <th>Usuario</th>
                 <th>Rol</th>
                 <th className="text-end">Acciones</th>
@@ -259,7 +262,7 @@ export default function AdminPanel({
 
                   return (
                     <tr key={u.id}>
-                      <td className="text-muted small">#{u.id}</td>
+                      <td className="text-muted small d-none d-sm-table-cell">#{u.id}</td>
                       <td className="fw-semibold">
                         {u.username}
                         {u.username.toLowerCase() === (usuarioActual?.nombre || '').toLowerCase() && (
@@ -272,7 +275,7 @@ export default function AdminPanel({
                         </span>
                       </td>
                       <td className="text-end">
-                        <div className="d-inline-flex gap-2">
+                        <div className="d-inline-flex flex-wrap justify-content-end gap-1">
                           <button
                             type="button"
                             className="btn btn-sm btn-outline-warning"
@@ -287,7 +290,7 @@ export default function AdminPanel({
                               <button
                                 type="button"
                                 className="btn btn-sm btn-danger fw-bold"
-                                onClick={() => handleEliminarUsuario(u.id)}
+                                onClick={() => handleEliminarUsuario(u)}
                               >
                                 Confirmar
                               </button>
@@ -306,7 +309,7 @@ export default function AdminPanel({
                               disabled={esProtegido}
                               onClick={() => setConfirmandoUsuarioId(u.id)}
                             >
-                              <i className="bi bi-trash-fill me-1"></i> Eliminar
+                              <i className="bi bi-trash-fill"></i> <span className="d-none d-sm-inline">Eliminar</span>
                             </button>
                           )}
                         </div>

@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Profile from './pages/Profile';
 import AdminPanel from './pages/AdminPanel';
 import {
+  changePasswordRequest,
   clearToken,
   createPeliculaRequest,
   deletePeliculaRequest,
@@ -29,11 +30,22 @@ export default function App() {
   const [peliculas, setPeliculas] = useState([]);
   const [cargandoPeliculas, setCargandoPeliculas] = useState(false);
   const [errorApi, setErrorApi] = useState('');
+  const [toast, setToast] = useState(null);
   const [filtroBusqueda, setFiltroBusqueda] = useState('');
   const [peliculaSeleccionada, setPeliculaSeleccionada] = useState(null);
   const [peliculaAEditar, setPeliculaAEditar] = useState(null);
 
   const esAdmin = usuarioActual?.role === 'ROLE_ADMIN' || usuarioActual?.esAdmin === true;
+
+  const mostrarToast = useCallback((mensaje) => {
+    setToast({ id: Date.now(), mensaje });
+  }, []);
+
+  useEffect(() => {
+    if (!toast) return undefined;
+    const timer = setTimeout(() => setToast(null), 3200);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   const handleLogout = useCallback(() => {
     clearToken();
@@ -185,6 +197,7 @@ export default function App() {
     try {
       const actualizada = await updatePerfilPeliculaRequest(idPelicula, { estadoPerfil: nuevoEstado });
       reemplazarPeliculaEnEstado(actualizada);
+      mostrarToast(nuevoEstado === 'ninguno' ? 'Película quitada de tu lista.' : `Estado actualizado a "${nuevoEstado.replace('_', ' ')}".`);
     } catch (err) {
       setErrorApi(err.message || 'No se pudo actualizar el estado de la película.');
     }
@@ -199,9 +212,29 @@ export default function App() {
     try {
       const actualizada = await updatePerfilPeliculaRequest(idPelicula, payload);
       reemplazarPeliculaEnEstado(actualizada);
+      mostrarToast(nuevaPuntuacion === null ? 'Puntuación eliminada.' : `Calificaste con ${nuevaPuntuacion}/5 estrellas.`);
     } catch (err) {
       setErrorApi(err.message || 'No se pudo actualizar la puntuación.');
     }
+  };
+
+  const handleToggleFavorita = async (idPelicula) => {
+    const actual = peliculas.find((p) => String(p.id) === String(idPelicula));
+    if (!actual) return;
+    const siguiente = !actual.esFavorita;
+
+    try {
+      const actualizada = await updatePerfilPeliculaRequest(idPelicula, { esFavorita: siguiente });
+      reemplazarPeliculaEnEstado(actualizada);
+      mostrarToast(siguiente ? 'Añadida a tu Top 4 Favoritas.' : 'Quitada de tu Top 4 Favoritas.');
+    } catch (err) {
+      setErrorApi(err.message || 'No se pudo actualizar Top 4 Favoritas.');
+    }
+  };
+
+  const handleCambiarClave = async (currentPassword, newPassword) => {
+    await changePasswordRequest(currentPassword, newPassword);
+    mostrarToast('Contraseña actualizada correctamente.');
   };
 
   const mostrarModal = (id) => {
@@ -227,6 +260,10 @@ export default function App() {
     mostrarModal('modalAgregarPelicula');
   };
 
+  const handleAbrirCambiarClave = () => {
+    mostrarModal('modalCambiarClave');
+  };
+
   const handleSolicitarEdicion = (peli) => {
     if (!esAdmin) return;
     setPeliculaAEditar(peli);
@@ -237,6 +274,7 @@ export default function App() {
     if (!esAdmin) throw new Error('Acceso denegado: se requiere rol de administrador.');
     const creada = await createPeliculaRequest(nuevaPeli);
     setPeliculas((prev) => [creada, ...prev]);
+    mostrarToast(`Película "${creada.titulo}" agregada al catálogo.`);
     return creada;
   };
 
@@ -245,6 +283,7 @@ export default function App() {
     const actualizada = await updatePeliculaRequest(idPelicula, datosPeli);
     reemplazarPeliculaEnEstado(actualizada);
     setPeliculaAEditar(null);
+    mostrarToast(`Película "${actualizada.titulo}" actualizada.`);
     return actualizada;
   };
 
@@ -255,6 +294,7 @@ export default function App() {
     setPeliculaSeleccionada((actual) =>
       actual && String(actual.id) === String(idPelicula) ? null : actual
     );
+    mostrarToast('Película eliminada del catálogo.');
   };
 
   if (cargandoSesion) {
@@ -277,6 +317,7 @@ export default function App() {
             onSearch={setFiltroBusqueda}
             onLogout={handleLogout}
             onNuevaPelicula={handleAbrirNuevaPelicula}
+            onAbrirCambiarClave={handleAbrirCambiarClave}
           />
         )}
 
@@ -341,6 +382,7 @@ export default function App() {
                   onSolicitarEdicion={handleSolicitarEdicion}
                   onEliminarPelicula={handleEliminarPelicula}
                   onAbrirDetalles={handleAbrirDetalles}
+                  onNotify={mostrarToast}
                 />
               </ProtectedRoute>
             )}
@@ -359,7 +401,25 @@ export default function App() {
             onSolicitarEdicion={handleSolicitarEdicion}
             onCalificar={handleCalificar}
             onCambiarEstado={handleCambiarEstado}
+            onToggleFavorita={handleToggleFavorita}
+            onCambiarClave={handleCambiarClave}
+            onNotify={mostrarToast}
           />
+        )}
+
+        {toast && (
+          <div className="position-fixed bottom-0 end-0 p-3" style={{ zIndex: 1080 }}>
+            <div className="toast-7box px-3 py-2 d-flex align-items-center gap-2 small" role="status">
+              <i className="bi bi-check-circle-fill text-success"></i>
+              <span>{toast.mensaje}</span>
+              <button
+                type="button"
+                className="btn-close btn-close-white btn-sm ms-2"
+                aria-label="Cerrar notificación"
+                onClick={() => setToast(null)}
+              />
+            </div>
+          </div>
         )}
       </div>
     </BrowserRouter>

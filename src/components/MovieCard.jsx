@@ -24,13 +24,13 @@ export default function MovieCard({ peli, onCambiarEstado = () => {}, onAbrirDet
   const badgeInfo = peli.estadoPerfil && peli.estadoPerfil !== 'ninguno' ? ESTADO_BADGES[peli.estadoPerfil] : null;
 
   return (
-    <div className="card bg-transparent border-0 text-white position-relative card-pelicula" style={{ width: '168px', flexShrink: 0 }}>
+    <div className="card bg-transparent border-0 text-white position-relative card-pelicula">
       {/* PÓSTER CON BADGES Y OVERLAY */}
       <div
         className="position-relative overflow-hidden rounded-3 shadow poster-container cursor-pointer"
         onClick={() => onAbrirDetalles(peli.id)}
       >
-        {/* Badge de puntuación personal si fue calificada */}
+        {/* Badge de puntuación personal o favorita */}
         {peli.miPuntuacion && (
           <span
             className="badge bg-warning text-dark position-absolute top-0 start-0 m-2 shadow-sm z-2 fw-bold"
@@ -38,6 +38,16 @@ export default function MovieCard({ peli, onCambiarEstado = () => {}, onAbrirDet
             title={`Tu puntuación: ${peli.miPuntuacion}/5`}
           >
             <i className="bi bi-star-fill"></i> Mi nota: {peli.miPuntuacion}
+          </span>
+        )}
+
+        {peli.esFavorita && (
+          <span
+            className="badge bg-danger text-white position-absolute bottom-0 start-0 m-2 shadow-sm z-2"
+            style={{ fontSize: '10px' }}
+            title="En tu Top 4 Favoritas"
+          >
+            <i className="bi bi-heart-fill"></i>
           </span>
         )}
 

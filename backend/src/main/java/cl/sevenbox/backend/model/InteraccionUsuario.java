@@ -39,6 +39,9 @@ public class InteraccionUsuario {
     @Column
     private Integer miPuntuacion;
 
+    @Column(nullable = false)
+    private boolean esFavorita = false;
+
     public InteraccionUsuario() {}
 
     public InteraccionUsuario(Usuario usuario, Pelicula pelicula) {
@@ -84,5 +87,13 @@ public class InteraccionUsuario {
 
     public void setMiPuntuacion(Integer miPuntuacion) {
         this.miPuntuacion = miPuntuacion;
+    }
+
+    public boolean isEsFavorita() {
+        return esFavorita;
+    }
+
+    public void setEsFavorita(boolean esFavorita) {
+        this.esFavorita = esFavorita;
     }
 }

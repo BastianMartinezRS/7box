@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 public interface InteraccionUsuarioRepository extends JpaRepository<InteraccionUsuario, Long> {
     List<InteraccionUsuario> findByUsuarioId(Long usuarioId);
     Optional<InteraccionUsuario> findByUsuarioIdAndPeliculaId(Long usuarioId, Long peliculaId);
+    long countByUsuarioIdAndEsFavoritaTrue(Long usuarioId);
     void deleteByPeliculaId(Long peliculaId);
     void deleteByUsuarioId(Long usuarioId);
 

@@ -25,4 +25,11 @@ public final class AuthDtos {
             String role,
             boolean esAdmin
     ) {}
+
+    public record ChangePasswordRequest(
+            @NotBlank(message = "La contraseña actual es obligatoria.")
+            String currentPassword,
+            @NotBlank(message = "La nueva contraseña es obligatoria.")
+            String newPassword
+    ) {}
 }

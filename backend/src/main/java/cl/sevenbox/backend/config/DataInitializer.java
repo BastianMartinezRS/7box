@@ -48,6 +48,11 @@ public class DataInitializer implements CommandLineRunner {
         } catch (Exception ignored) {
             // Ignorar si la tabla aun no existe o el motor SQL ya usa VARCHAR
         }
+        try {
+            jdbcTemplate.execute("ALTER TABLE interacciones_usuario ADD COLUMN IF NOT EXISTS es_favorita BOOLEAN NOT NULL DEFAULT FALSE");
+        } catch (Exception ignored) {
+            // Ignorar si la tabla aun no existe
+        }
     }
 
     private void seedUsuarios() {

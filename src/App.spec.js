@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Navbar from './components/Navbar.jsx';
 import Modals from './components/Modals.jsx';
 import Profile from './pages/Profile.jsx';
+import Home from './pages/Home.jsx';
 import { formatHoursMinutes, getYouTubeEmbedUrl, parseDurationMinutes } from './utils/movieHelpers.js';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -240,5 +241,35 @@ describe('Pruebas Unitarias Frontend - 7box', () => {
     expect(container.textContent).toContain('2h');
     expect(container.textContent).toContain('4.0/5');
     expect(container.textContent).toContain('Acción');
+  });
+
+  it('19. Profile debe mostrar sección Top 4 Favoritas con películas marcadas como favoritas', async () => {
+    const pelis = [
+      { ...mockPelicula, id: 1, titulo: 'Favorita Uno', esFavorita: true },
+      { ...mockPelicula, id: 2, titulo: 'Película Normal', esFavorita: false },
+    ];
+    await act(async () => {
+      root.render(<Profile peliculas={pelis} onCambiarEstado={() => {}} onAbrirDetalles={() => {}} onCalificar={() => {}} />);
+    });
+
+    expect(container.textContent).toContain('Top 4 Favoritas (1/4)');
+    expect(container.textContent).toContain('Favorita Uno');
+  });
+
+  it('20. Home debe filtrar películas por nombre de director además de título', async () => {
+    const pelis = [
+      { ...mockPelicula, id: 1, titulo: 'Oppenheimer', director: 'Christopher Nolan', generos: ['Drama'], estadoPerfil: 'ninguno' },
+      { ...mockPelicula, id: 2, titulo: 'Parasite', director: 'Bong Joon-ho', generos: ['Thriller'], estadoPerfil: 'ninguno' },
+    ];
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <Home peliculas={pelis} filtroBusqueda="Nolan" onCambiarEstado={() => {}} onAbrirDetalles={() => {}} onCalificar={() => {}} />
+        </MemoryRouter>
+      );
+    });
+
+    expect(container.textContent).toContain('Oppenheimer');
+    expect(container.textContent).not.toContain('Parasite');
   });
 });
